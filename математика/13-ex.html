@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Генератор заданий</title>
+    <style>
+        .task-container {
+            margin: 20px;
+        }
+        .answer-container {
+            margin-top: 20px;
+        }
+        .number-line {
+            position: relative;
+            width: 300px;
+            height: 50px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid black;
+        }
+        .point {
+            position: absolute;
+            bottom: 0;
+            height: 10px;
+            width: 10px;
+        }
+        .filled-point {
+            background-color: black;
+            border-radius: 50%;
+        }
+        .open-point {
+            border: 2px solid black;
+            border-radius: 50%;
+        }
+        .label {
+            position: absolute;
+            bottom: -20px;
+            font-size: 12px;
+            transform: translateX(-50%);
+        }
+    </style>
+</head>
+<body>
+
+<div class="task-container">
+    <h2>Задание:</h2>
+    <div id="task"></div>
+</div>
+
+<div class="answer-container">
+    <label for="userAnswer">Введите ответ:</label>
+    <input type="text" id="userAnswer" placeholder="Введите номер варианта">
+    <button onclick="checkAnswer()">Проверить ответ</button>
+</div>
+
+<div class="solution-container">
+    <button onclick="showSolution()">Показать решение</button>
+    <p id="solution"></p>
+</div>
+
+<div class="result-container">
+    <button onclick="showAnswer()">Показать ответ</button>
+    <p id="correctAnswer"></p>
+</div>
+
+<div class="generate-container">
+    <button onclick="generateTask()">Сгенерировать новое задание</button>
+</div>
+
+<script>
+    let currentAnswer = 0;
+    let currentSolution = "";
+
+    function generateTask() {
+        let taskType = Math.random() > 0.5 ? 1 : 2; // Случайный выбор типа задания
+        if (taskType === 1) {
+            generateInequalityTask();  // Задание с неравенствами
+        } else {
+            generateNumberLineTask();  // Задание с числовыми прямыми и неравенством
+        }
+    }
+
+    // Функция для генерации неравенств
+    function generateRandomInequality() {
+        let a = Math.floor(Math.random() * 10) + 1;
+        let b = Math.floor(Math.random() * 20) - 10;
+        let c = Math.floor(Math.random() * 10) + 1;
+
+        let inequality = `${a}x + ${b} > ${c}`;
+        let solution = `(x > ${(c - b) / a})`;
+
+        return { inequality, solution };
+    }
+
+    // Генерация задания с неравенствами
+    function generateInequalityTask() {
+        let { inequality, solution } = generateRandomInequality();
+        let task = `Укажите решение неравенства: <b>${inequality}</b><br>`;
+        let options = [
+            `(x < ${randomFloat(1, 10)})`,
+            `(x > ${randomFloat(1, 10)})`,
+            solution,
+            `(x = ${randomFloat(1, 10)})`
+        ];
+
+        options = options.sort(() => Math.random() - 0.5);
+
+        task += `1) ${options[0]}<br>`;
+        task += `2) ${options[1]}<br>`;
+        task += `3) ${options[2]}<br>`;
+        task += `4) ${options[3]}<br>`;
+
+        document.getElementById('task').innerHTML = task;
+        currentAnswer = options.indexOf(solution) + 1;
+        currentSolution = `Решение: ${solution}`;
+        resetFields();
+    }
+
+    // Функция для генерации случайных чисел с плавающей запятой
+    function randomFloat(min, max) {
+        return (Math.random() * (max - min) + min).toFixed(2);
+    }
+
+    // Функция для генерации случайного неравенства для числовой прямой
+    function generateRandomIntervalInequality() {
+        let a = randomFloat(-10, 0);
+        let b = randomFloat(1, 10);
+        let inequalityType = Math.random() > 0.5 ? 1 : 2; // Случайный выбор между одним неравенством или системой неравенств
+
+        let inequality;
+        if (inequalityType === 1) {
+            inequality = `${a} < x < ${b}`;
+        } else {
+            inequality = `x < ${a} или x > ${b}`;
+        }
+
+        let interval = { a, b, openA: Math.random() > 0.5, openB: Math.random() > 0.5 };
+
+        return { inequality, interval };
+    }
+
+    // Генерация задания с числовыми прямыми и неравенством
+    function generateNumberLineTask() {
+        let intervalInequality = generateRandomIntervalInequality(); // Генерация неравенства для задания
+        let task = `Решите неравенство: <b>${intervalInequality.inequality}</b><br>`;
+        task += `На каком из рисунков изображено множество решений интервала?<br>`;
+
+        let correctInterval = intervalInequality.interval; // Правильный интервал
+
+        let intervals = [
+            correctInterval,
+            generateRandomInterval(),
+            generateRandomInterval(),
+            generateRandomInterval()
+        ];
+
+        // Сохраняем правильный вариант
+        currentAnswer = Math.floor(Math.random() * 4) + 1;
+
+        // Перемешаем правильный интервал с другими
+        intervals = intervals.sort(() => Math.random() - 0.5);
+
+        for (let i = 0; i < intervals.length; i++) {
+            task += generateNumberLine(intervals[i], i + 1);
+        }
+
+        document.getElementById('task').innerHTML = task;
+        currentSolution = `Правильный ответ — вариант ${currentAnswer}`;
+        resetFields();
+    }
+
+    // Функция для генерации случайных интервалов
+    function generateRandomInterval() {
+        let a = randomFloat(-10, 0);  // Начало интервала
+        let b = randomFloat(1, 10);   // Конец интервала
+        let openA = Math.random() > 0.5;  // Открытая/закрытая точка
+        let openB = Math.random() > 0.5;  // Открытая/закрытая точка
+
+        return { a, b, openA, openB };
+    }
+
+    // Функция для генерации числовой прямой с метками и точками
+    function generateNumberLine(interval, variantNumber) {
+        const { a, b, openA, openB } = interval;
+
+        return `
+            <div class="number-line">
+                <div class="point ${openA ? 'open-point' : 'filled-point'}" style="left: 10%;"></div>
+                <div class="point ${openB ? 'open-point' : 'filled-point'}" style="left: 90%;"></div>
+                <div class="label" style="left: 10%;">${a}</div>
+                <div class="label" style="left: 90%;">${b}</div>
+            </div>
+            <p>Вариант ${variantNumber}</p>
+        `;
+    }
+
+    // Проверка ответа пользователя
+    function checkAnswer() {
+        let userAnswer = document.getElementById("userAnswer").value;
+        if (parseInt(userAnswer) === currentAnswer) {
+            alert("Правильно!");
+        } else {
+            alert("Неправильно.");
+        }
+    }
+
+    // Показать решение
+    function showSolution() {
+        document.getElementById('solution').textContent = currentSolution;
+    }
+
+    // Показать правильный ответ
+    function showAnswer() {
+        document.getElementById('correctAnswer').textContent = "Правильный ответ: " + currentAnswer;
+    }
+
+    // Очистка полей
+    function resetFields() {
+        document.getElementById("userAnswer").value = "";
+        document.getElementById('solution').textContent = "";
+        document.getElementById('correctAnswer').textContent = "";
+    }
+
+    // Инициализация задания при загрузке страницы
+    generateTask();
+</script>
+
+</body>
+</html>

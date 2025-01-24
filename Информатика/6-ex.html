@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6 Заданий ОГЭ информатика 9 класс</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            background-image: linear-gradient(90deg, rgba(183,25,80,1) 0%, rgba(203,17,204,1) 34%, rgba(102,68,128,1) 65%, rgba(95,0,255,1) 100%);
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: black;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+        button:hover {
+            background-color: whitesmoke;
+            color: black;
+            transition: 0.3s;
+            box-shadow: 0px 0px 10px black;
+        }
+        input[type="number"] {
+            padding: 5px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid black;
+        }
+        .feedback, #answer, #solution {
+            font-size: 20px;
+            margin-top: 20px;
+        }
+        .code-block {
+            background-color: #f9f9f9;
+            border-left: 5px solid #4CAF50;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .code-block pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+        }
+        .hell {
+            background-color: black;
+            color: white;
+            border-radius: 30px;
+            box-shadow: 0 5px 10px gray;
+            padding: 20px;
+            position: fixed;
+            bottom: 50px;
+            left: 90%;
+            z-index: 100;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <a href="main.html" class="hell">Вернуться<br>обратно</a>
+    <div class="container">
+        <h1>6 Задание ОГЭ</h1>
+        <p>Ниже приведена программа, записанная на пяти языках программирования.</p>
+        
+        <div class="code-block"><h2>Python</h2><pre id="pythonCode"></pre></div>
+        <div class="code-block"><h2>BASIC</h2><pre id="basicCode"></pre></div>
+        <div class="code-block"><h2>Pascal</h2><pre id="pascalCode"></pre></div>
+        <div class="code-block"><h2>Алгоритмический язык</h2><pre id="algorithmicCode"></pre></div>
+        <div class="code-block"><h2>C++</h2><pre id="cppCode"></pre></div>
+
+        <p id="taskDescription"></p>
+        
+        <button onclick="showAnswer()">Показать ответ</button>
+        <button onclick="showSolution()">Показать решение</button>
+        <button onclick="checkAnswer()">Проверить ответ</button>
+        <button onclick="generateTask()">Сгенерировать задание</button>
+        
+        <input type="number" id="userAnswer" placeholder="Ваш ответ">
+        
+        <p id="answer" class="feedback" style="display: none;">Ответ: </p>
+        <p id="solution" class="feedback" style="display: none;"></p>
+        <p id="feedback" class="feedback"></p> <!-- Результат ответа -->
+    </div>
+
+    <script>
+        let correctAnswerCount;
+        let currentQuestionType;
+
+        function randomIntFromInterval(min, max) {
+            return Math.floor(Math.random() * (max - min + 1) + min);
+        }
+
+        function generateCondition() {
+            const conditions = ['<', '>', '==', '<=', '>='];
+            return conditions[Math.floor(Math.random() * conditions.length)];
+        }
+
+        function generateOperator() {
+            return Math.random() < 0.5 ? 'or' : 'and';
+        }
+
+        function generateRandomPairs(numPairs) {
+            let pairs = [];
+            for (let i = 0; i < numPairs; i++) {
+                pairs.push([randomIntFromInterval(-10, 10), randomIntFromInterval(-10, 10)]);
+            }
+            return pairs;
+        }
+
+        function evaluateCondition(s, t, sCond, sValue, tCond, tValue, operator) {
+            let sResult = false;
+            let tResult = false;
+
+            switch (sCond) {
+                case '<': sResult = s < sValue; break;
+                case '>': sResult = s > sValue; break;
+                case '==': sResult = s == sValue; break;
+                case '<=': sResult = s <= sValue; break;
+                case '>=': sResult = s >= sValue; break;
+            }
+
+            switch (tCond) {
+                case '<': tResult = t < tValue; break;
+                case '>': tResult = t > tValue; break;
+                case '==': tResult = t == tValue; break;
+                case '<=': tResult = t <= tValue; break;
+                case '>=': tResult = t >= tValue; break;
+            }
+
+            return (operator === 'or') ? (sResult || tResult ? "YES" : "NO") : (sResult && tResult ? "YES" : "NO");
+        }
+
+        function generateTask() {
+            const sCond = generateCondition();
+            const tCond = generateCondition();
+            const sValue = randomIntFromInterval(1, 10);
+            const tValue = randomIntFromInterval(1, 10);
+            const operator = generateOperator();
+            const pairs = generateRandomPairs(9);
+
+            currentQuestionType = Math.random() < 0.5 ? 'NO' : 'YES';
+            let resultCount = { YES: 0, NO: 0 };
+
+            // Generate code blocks for different languages
+            document.getElementById("pythonCode").innerText = `s = int(input())\nt = int(input())\nif s ${sCond} ${sValue} ${operator} t ${tCond} ${tValue}:\n    print("YES")\nelse:\n    print("NO")`;
+            document.getElementById("basicCode").innerText = `INPUT s\nINPUT t\nIF s ${sCond} ${sValue} ${operator} t ${tCond} ${tValue} THEN\n    PRINT "YES"\nELSE\n    PRINT "NO"\nEND IF`;
+            document.getElementById("pascalCode").innerText = `var\n  s, t: integer;\nbegin\n  readln(s);\n  readln(t);\n  if (s ${sCond} ${sValue} ${operator} t ${tCond} ${tValue}) then\n    writeln('YES')\n  else\n    writeln('NO');\nend.`;
+            document.getElementById("algorithmicCode").innerText = `АЛГОРИТМ\n  ВВОД s, t\n  ЕСЛИ s ${sCond} ${sValue} ${operator} t ${tCond} ${tValue} ТО\n    ВЫВОД "YES"\n  ИНАЧЕ\n    ВЫВОД "NO"\nКОНЕЦ`;
+            document.getElementById("cppCode").innerText = `#include <iostream>\nusing namespace std;\nint main() {\n    int s, t;\n    cin >> s >> t;\n    if (s ${sCond} ${sValue} ${operator} t ${tCond} ${tValue})\n        cout << "YES" << endl;\n    else\n        cout << "NO" << endl;\n    return 0;\n}`;
+
+            // Evaluate pairs and generate task description
+            pairs.forEach(pair => {
+                const result = evaluateCondition(pair[0], pair[1], sCond, sValue, tCond, tValue, operator);
+                resultCount[result]++;
+            });
+
+            const question = currentQuestionType === 'NO' ? `Сколько было запусков, при которых программа напечатала «NO»?` : `Сколько было запусков, при которых программа напечатала «YES»?`;
+            correctAnswerCount = resultCount[currentQuestionType];
+            document.getElementById("taskDescription").innerHTML = `Было проведено 9 запусков программы, в которых использовались следующие пары (s, t): ${pairs.map(pair => `(${pair[0]}, ${pair[1]})`).join(", ")}. ${question}`;
+            document.getElementById("answer").innerText = `Ответ: ${correctAnswerCount}`;
+            document.getElementById("solution").innerHTML = `<b>Решение:</b><br>Программа напечатает «${currentQuestionType}», если ${currentQuestionType === 'YES' ? 'хотя бы одно' : 'ни одно'} из условий выполняется. Было ${resultCount.NO} запусков(ов), при которых программа напечатала «NO», и ${resultCount.YES} запусков(ов), при которых программа напечатала «YES».`;
+
+            document.getElementById("answer").style.display = "none";
+            document.getElementById("solution").style.display = "none";
+            document.getElementById("userAnswer").value = "";
+            document.getElementById("feedback").textContent = "";
+        }
+
+        function showAnswer() {
+            document.getElementById("answer").style.display = "block";
+        }
+
+        function showSolution() {
+            document.getElementById("solution").style.display = "block";
+        }
+
+        // Извлекаем токен сразу при загрузке страницы
+        const token = localStorage.getItem('token');
+
+        function updateProgressForTask6() {
+            fetch('/user/progress/informatics', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ taskId: '6', increment: 1 }) // отправляем прогресс для 6 задания
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`Ошибка: ${response.statusText}`);
+                return response.json();
+            })
+            .then(data => console.log("Прогресс по заданию 6 обновлен:", data.message))
+            .catch(error => console.error("Ошибка при обновлении прогресса:", error));
+        }
+
+        function checkAnswer() {
+            const userAnswer = parseInt(document.getElementById("userAnswer").value);
+            const feedback = document.getElementById("feedback");
+
+            // Проверяем корректность ответа и обновляем прогресс, если ответ верный
+            feedback.textContent = (userAnswer === correctAnswerCount) ? "Правильно!" : "Неправильно. Попробуйте еще раз.";
+            if (userAnswer === correctAnswerCount) updateProgressForTask6();
+        }
+        
+        // Инициализируем задание
+        generateTask();
+    </script>
+</body>
+</html>

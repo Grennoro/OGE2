@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор Задач с Чертежами</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .task {
+            margin-bottom: 20px;
+        }
+        #figure {
+            border: 1px solid black;
+            width: 300px;
+            height: 300px;
+            position: relative;
+        }
+        #answer, #solution {
+            display: none;
+        }
+        .btn {
+            margin: 5px;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        #figure canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Генератор Задач по Геометрии с Чертежами</h1>
+<div id="task-container">
+    <div class="task">
+        <p id="task-text">Задание генерируется...</p>
+        <div id="figure">
+            <canvas id="figureCanvas" width="300" height="300"></canvas>
+        </div>
+        <div>
+            <input type="text" id="user-answer" placeholder="Введите ваш ответ" />
+            <button class="btn" onclick="checkAnswer()">Проверить ответ</button>
+        </div>
+        <div id="answer">
+            <p><strong>Ответ:</strong> <span id="correct-answer">Ответ генерируется...</span></p>
+        </div>
+        <div id="solution">
+            <p><strong>Решение:</strong> <span id="solution-text">Решение генерируется...</span></p>
+        </div>
+        <button class="btn" onclick="showAnswer()">Показать ответ</button>
+        <button class="btn" onclick="showSolution()">Показать решение</button>
+        <button class="btn" onclick="generateTask()">Сгенерировать новое задание</button>
+    </div>
+</div>
+
+<script>
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function generateTask() {
+        const randomBK = getRandomInt(5, 15);
+        const randomCK = getRandomInt(10, 20);
+        const randomAngle = getRandomInt(30, 60);
+        const randomBase1 = getRandomInt(4, 10);
+        const randomBase2 = getRandomInt(10, 20);
+        const randomRadius = getRandomInt(50, 100);
+        const randomHypotenuse = Math.sqrt(randomCK ** 2 + randomBK ** 2).toFixed(2);
+        
+        const taskTypes = [
+            { 
+                taskText: `Биссектриса угла A параллелограмма ABCD пересекает сторону BC в точке K. Найдите периметр параллелограмма, если BK = ${randomBK}, CK = ${randomCK}.`,
+                solution: `Периметр параллелограмма P = 2 * (BK + CK). В данном случае BK = ${randomBK}, CK = ${randomCK}. Тогда P = ${(randomBK + randomCK) * 2}.`,
+                answer: (randomBK + randomCK) * 2,
+                drawFunction: () => drawParallelogram(randomBK, randomCK)
+            },
+            {
+                taskText: `Прямые m и n параллельны. Найдите ∠3, если ∠1= 37°, ∠2 = 77°.`,
+                solution: `Угол ∠3 равен углу ∠1, так как прямые m и n параллельны и накрест лежащие углы равны. Ответ: 37°.`,
+                answer: 37,
+                drawFunction: () => drawParallelLines(37, 77)
+            },
+            {
+                taskText: `В прямоугольном треугольнике ABC катет AC = ${randomCK}, а высота CH, опущенная на гипотенузу, равна ${randomBK}. Найдите гипотенузу.`,
+                solution: `Используя теорему Пифагора, гипотенуза = sqrt(AC^2 + BC^2). После вычисления находим гипотенузу: ${randomHypotenuse}.`,
+                answer: randomHypotenuse,
+                drawFunction: () => drawRightTriangle(randomCK, randomBK)
+            },
+            {
+                taskText: `Основания трапеции равны ${randomBase1} и ${randomBase2}. Найдите длину средней линии трапеции.`,
+                solution: `Средняя линия трапеции равна (a + b) / 2. В данном случае это (${randomBase1} + ${randomBase2}) / 2 = ${(randomBase1 + randomBase2) / 2}.`,
+                answer: (randomBase1 + randomBase2) / 2,
+                drawFunction: () => drawTrapezoid(randomBase1, randomBase2)
+            },
+            {
+                taskText: `Точка O — центр окружности радиусом ${randomRadius}. Найдите длину хорды AB, если она равна 102.`,
+                solution: `Хорда AB равна 102, используем радиус окружности для дальнейших вычислений.`,
+                answer: 102,
+                drawFunction: () => drawCircleWithChord(randomRadius, 102)
+            },
+            {
+                taskText: `Диагональ BD параллелограмма образует углы 65° и 50° с его сторонами. Найдите меньший угол параллелограмма.`,
+                solution: `Меньший угол = 65°, так как углы при диагоналях равны.`,
+                answer: 65,
+                drawFunction: () => drawDiagonalAngles(65, 50)
+            }
+        ];
+
+        let randomTask = taskTypes[getRandomInt(0, taskTypes.length - 1)];
+        document.getElementById("task-text").textContent = randomTask.taskText;
+        document.getElementById("correct-answer").textContent = randomTask.answer;
+        document.getElementById("solution-text").textContent = randomTask.solution;
+        document.getElementById("answer").style.display = "none";
+        document.getElementById("solution").style.display = "none";
+        
+        // Вызываем функцию отрисовки для выбранного задания
+        randomTask.drawFunction();
+    }
+
+    function drawParallelogram(BK, CK) {
+        const canvas = document.getElementById('figureCanvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Рисуем параллелограмм
+        ctx.beginPath();
+        ctx.moveTo(50, 150); // A
+        ctx.lineTo(150, 150); // B
+        ctx.lineTo(180, 100); // C
+        ctx.lineTo(80, 100); // D
+        ctx.closePath();
+        ctx.stroke();
+
+        // Подписи вершин
+        ctx.font = "12px Arial";
+        ctx.fillText("A", 45, 160);
+        ctx.fillText("B", 145, 160);
+        ctx.fillText("C", 180, 110);
+        ctx.fillText("D", 75, 110);
+
+        // Биссектриса
+        ctx.beginPath();
+        ctx.moveTo(150, 150); // B
+        ctx.lineTo(165, 125); // K
+        ctx.stroke();
+
+        ctx.fillText("K", 170, 130);
+        ctx.fillText(`BK=${BK}`, 160, 140);
+        ctx.fillText(`CK=${CK}`, 180, 90);
+    }
+
+    function drawParallelLines(angle1, angle2) {
+        const canvas = document.getElementById('figureCanvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Рисуем параллельные прямые
+        ctx.beginPath();
+        ctx.moveTo(50, 50); // m
+        ctx.lineTo(250, 50);
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(50, 100); // n
+        ctx.lineTo(250, 100);
+        ctx.stroke();
+
+        // Подписи углов
+        ctx.font = "12px Arial";
+        ctx.fillText(`∠1=${angle1}°`, 60, 45);
+        ctx.fillText(`∠2=${angle2}°`, 60, 95);
+    }
+
+    function drawRightTriangle(AC, CH) {
+        const canvas = document.getElementById('figureCanvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Рисуем треугольник
+        ctx.beginPath();
+        ctx.moveTo(50, 250); // A
+        ctx.lineTo(250, 250); // B
+        ctx.lineTo(50, 50); // C
+        ctx.closePath();
+        ctx.stroke();
+
+        // Подписи
+        ctx.font = "12px Arial";
+        ctx.fillText("A", 45, 260);
+        ctx.fillText("B", 245, 260);
+        ctx.fillText("C", 45, 45);
+
+        ctx.fillText(`AC=${AC}`, 10, 150);
+        ctx.fillText(`CH=${CH}`, 150, 270);
+    }
+
+    function drawTrapezoid(base1, base2) {
+        const canvas = document.getElementById('figureCanvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Рисуем трапецию
+        ctx.beginPath();
+        ctx.moveTo(100, 100); // A
+        ctx.lineTo(200, 100); // B
+        ctx.lineTo(170, 200); // C
+        ctx.lineTo(130, 200); // D
+        ctx.closePath();
+        ctx.stroke();
+
+        // Подписи
+        ctx.fillText("A", 95, 95);
+        ctx.fillText("B", 195, 95);
+        ctx.fillText("C", 165, 205);
+        ctx.fillText("D", 125, 205);
+
+        // Средняя линия
+        ctx.beginPath();
+        ctx.moveTo(115, 150); // M
+        ctx.lineTo(185, 150); // N
+        ctx.stroke();
+
+        ctx.fillText(`Основания: ${base1}, ${base2}`, 110, 220);
+    }
+
+    function drawCircleWithChord(radius, chordLength) {
+        const canvas = document.getElementById('figureCanvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Рисуем окружность
+        ctx.beginPath();
+        ctx.arc(150, 150, radius, 0, 2 * Math.PI);
+        ctx.stroke();
+
+        // Рисуем хорду
+        ctx.beginPath();
+        ctx.moveTo(100, 100); // A
+        ctx.lineTo(200, 100); // B
+        ctx.stroke();
+
+        // Подписи
+        ctx.font = "12px Arial";
+        ctx.fillText("A", 95, 95);
+        ctx.fillText("B", 195, 95);
+        ctx.fillText(`Радиус=${radius}`, 120, 140);
+        ctx.fillText(`AB=${chordLength}`, 130, 90);
+    }
+
+    function drawDiagonalAngles(angle1, angle2) {
+        const canvas = document.getElementById('figureCanvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Рисуем параллелограмм с диагоналями
+        ctx.beginPath();
+        ctx.moveTo(50, 150); // A
+        ctx.lineTo(150, 150); // B
+        ctx.lineTo(180, 100); // C
+        ctx.lineTo(80, 100); // D
+        ctx.closePath();
+        ctx.stroke();
+
+        // Рисуем диагонали
+        ctx.beginPath();
+        ctx.moveTo(50, 150); // A
+        ctx.lineTo(180, 100); // C
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(150, 150); // B
+        ctx.lineTo(80, 100); // D
+        ctx.stroke();
+
+        // Подписи углов
+        ctx.font = "12px Arial";
+        ctx.fillText(`65°`, 140, 160);
+        ctx.fillText(`50°`, 90, 160);
+    }
+
+    function checkAnswer() {
+        const userAnswer = document.getElementById("user-answer").value;
+        const correctAnswer = document.getElementById("correct-answer").textContent;
+        if (userAnswer == correctAnswer) {
+            alert("Правильно!");
+        } else {
+            alert("Неправильно! Попробуйте снова.");
+        }
+    }
+
+    function showAnswer() {
+        document.getElementById("answer").style.display = "block";
+    }
+
+    function showSolution() {
+        document.getElementById("solution").style.display = "block";
+    }
+
+    generateTask();
+</script>
+
+</body>
+</html>

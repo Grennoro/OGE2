@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Генератор заданий ОГЭ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .task {
+            margin-bottom: 20px;
+        }
+        button {
+            margin-top: 10px;
+        }
+        .hidden {
+            display: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #d3d3d3;
+        }
+        .map-container {
+            margin-bottom: 20px;
+        }
+        svg {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Генератор заданий ОГЭ (Путь, Печки и Дополнительные задачи)</h1>
+
+    <div class="map-container">
+        <h2>Карта маршрута</h2>
+        <svg id="map" viewBox="0 0 100 100">
+            <!-- Карта будет сгенерирована здесь -->
+        </svg>
+    </div>
+
+    <div id="description">
+        <h2>Описание задачи:</h2>
+        <p id="description-text"></p>
+    </div>
+
+    <div id="task-container-path">
+        <!-- Задания будут сгенерированы здесь -->
+    </div>
+
+    <button id="generate-button">Сгенерировать задания</button>
+
+    <script>
+        const villageNames = ['Авдеево', 'Бородино', 'Лумбуши', 'Нигижма', 'Шамонино'];
+        const caseFunctions = [generateCase2, generateCase3, generateCase4, generateCase5, generateCase6, generateCase7];
+
+        document.getElementById('generate-button').addEventListener('click', generateTasks);
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function generateTasks() {
+            const pathContainer = document.getElementById('task-container-path');
+            const mapContainer = document.getElementById('map');
+            const descriptionText = document.getElementById('description-text');
+            pathContainer.innerHTML = '';  // Очищаем контейнер для новых задач
+            mapContainer.innerHTML = '';  // Очищаем карту
+
+            const shuffledVillages = shuffleArray(villageNames.slice());
+            const selectedVillages = shuffledVillages.slice(0, 5);  // Выбираем 5 деревень из перемешанного списка
+
+            const distanceAminoToSosnovka = getRandomInt(12, 16);
+            const distanceSosnovkaToIgnatievo = getRandomInt(20, 25);
+            const distanceIgnatievoToDachny = getRandomInt(10, 16);
+            const distanceDachnyToMalcevo = getRandomInt(8, 12);
+
+            const speedHighway = getRandomInt(18, 22); // Скорость на шоссе
+            const speedForestRoad = getRandomInt(13, 17); // Скорость на лесной дороге
+
+            // Обновляем описание с правильным использованием "лесная дорога"
+            descriptionText.innerHTML = `
+                <strong>Миша летом отдыхает у дедушки и бабушки в деревне ${selectedVillages[0]}.</strong> 
+                Миша с дедушкой собираются съездить на велосипедах в село ${selectedVillages[2]}, чтобы добраться до железнодорожной станции. 
+                <br><br>Маршрут можно выбрать разными путями:
+                <ul>
+                    <li>По шоссе через деревню ${selectedVillages[1]}, где нужно свернуть направо, и проехать через поселок ${selectedVillages[3]}.</li>
+                    <li>Также можно поехать через лесную дорогу напрямую в ${selectedVillages[4]}, а затем до ${selectedVillages[2]}.</li>
+                    <li>Третий путь: через тропинку мимо деревни ${selectedVillages[4]} и затем по шоссе до ${selectedVillages[2]}.</li>
+                </ul>
+                <br> По шоссе они едут со скоростью ${speedHighway} км/ч, по лесной дороге и тропинке — ${speedForestRoad} км/ч.
+                Расстояния между деревнями:
+                <ul>
+                    <li>${selectedVillages[0]} — ${selectedVillages[1]}: ${distanceAminoToSosnovka} км</li>
+                    <li>${selectedVillages[1]} — ${selectedVillages[2]}: ${distanceSosnovkaToIgnatievo} км</li>
+                    <li>${selectedVillages[2]} — ${selectedVillages[3]}: ${distanceIgnatievoToDachny} км</li>
+                    <li>${selectedVillages[4]} — ${selectedVillages[2]}: ${distanceDachnyToMalcevo} км</li>
+                </ul>
+            `;
+
+            // Генерация карты
+            generateMap(mapContainer, selectedVillages);
+
+            // Всегда генерируем первое задание
+            generateCase1(1, selectedVillages);
+
+            // Генерация остальных 4 заданий с добавлением новых типов
+            const usedCases = new Set();
+            for (let i = 2; i <= 5; i++) {
+                let randomCase;
+                do {
+                    randomCase = caseFunctions[getRandomInt(0, caseFunctions.length - 1)];
+                } while (usedCases.has(randomCase));
+                usedCases.add(randomCase);
+                randomCase(i, selectedVillages);
+            }
+        }
+
+        // Генерация карты
+        function generateMap(container, villages) {
+            const positions = [
+                { x: 20, y: 80 },  // Village 1 (bottom left)
+                { x: 20, y: 40 },  // Village 2 (middle left)
+                { x: 50, y: 20 },  // Village 3 (top middle)
+                { x: 80, y: 40 },  // Village 4 (middle right)
+                { x: 80, y: 80 }   // Village 5 (bottom right)
+            ];
+
+            // Генерируем дороги
+            container.innerHTML += `
+                <line x1="${positions[0].x}" y1="${positions[0].y}" x2="${positions[1].x}" y2="${positions[1].y}" stroke="black" stroke-width="2" />
+                <line x1="${positions[1].x}" y1="${positions[1].y}" x2="${positions[2].x}" y2="${positions[2].y}" stroke="black" stroke-width="2" />
+                <line x1="${positions[2].x}" y1="${positions[2].y}" x2="${positions[3].x}" y2="${positions[3].y}" stroke="black" stroke-width="2" />
+                <line x1="${positions[3].x}" y1="${positions[3].y}" x2="${positions[4].x}" y2="${positions[4].y}" stroke="black" stroke-width="2" />
+                <line x1="${positions[0].x}" y1="${positions[0].y}" x2="${positions[4].x}" y2="${positions[4].y}" stroke="black" stroke-width="2" />
+                <line x1="${positions[0].x}" y1="${positions[0].y}" x2="${positions[3].x}" y2="${positions[3].y}" stroke="black" stroke-width="2" stroke-dasharray="5,5" />
+                <text x="30" y="60" font-size="4" fill="gray">Лесная дорога (пунктир)</text>
+            `;
+
+            // Генерируем деревни
+            for (let i = 0; i < villages.length; i++) {
+                container.innerHTML += `
+                    <circle cx="${positions[i].x}" cy="${positions[i].y}" r="3" fill="white" stroke="black" stroke-width="1" />
+                    <text x="${positions[i].x - 5}" y="${positions[i].y - 5}" font-size="4">${i + 1}</text>
+                `;
+            }
+        }
+
+        // Генерация первого задания с таблицей
+        function generateCase1(taskNumber, villages) {
+            const taskContainer = document.getElementById('task-container-path');
+            
+            // Генерируем случайную последовательность номеров
+            const shuffledIndices = shuffleArray([1, 2, 3, 4, 5]);
+
+            let task = `Заполните таблицу, определив, какими номерами обозначены города на плане.`;
+
+            // Создаем таблицу с городами и номерами
+            let table = `
+                <table>
+                    <tr>
+                        <th>Города</th>
+                        ${villages.map(village => `<td>${village}</td>`).join('')}
+                    </tr>
+                    <tr>
+                        <th>Номер</th>
+                        ${shuffledIndices.map(() => `<td></td>`).join('')}
+                    </tr>
+                </table>
+            `;
+
+            let answer = shuffledIndices.join(" ");
+            let solution = `Города и их номера: ${villages.map((village, i) => `${village} — ${shuffledIndices[i]}`).join(", ")}.`;
+
+            taskContainer.innerHTML += `
+                <div class="task">
+                    <h3>Задание ${taskNumber}:</h3>
+                    <p><strong>Условие:</strong> ${task}</p>
+                    ${table}
+                    <input type="text" id="user-answer-path-${taskNumber}" placeholder="Введите ваш ответ">
+                    <button onclick="showAnswer('path-${taskNumber}', '${answer}')">Показать ответ</button>
+                    <p id="answer-path-${taskNumber}" class="hidden"><strong>Ответ:</strong> ${answer}</p>
+                    <button onclick="showSolution('path-${taskNumber}', '${solution}')">Показать решение</button>
+                    <p id="solution-path-${taskNumber}" class="hidden"><strong>Решение:</strong> ${solution}</p>
+                    <button onclick="checkAnswer('user-answer-path-${taskNumber}', '${answer}')">Проверить ответ</button>
+                    <p id="check-result-path-${taskNumber}" class="hidden"></p>
+                </div>
+            `;
+        }
+
+        // Генерация второго задания
+        function generateCase2(taskNumber, villages) {
+            const taskContainer = document.getElementById('task-container-path');
+            let speedHighway = getRandomInt(60, 80);
+            let speedOffroad = getRandomInt(40, 60);
+            let percentageDifference = ((speedHighway - speedOffroad) / speedHighway * 100).toFixed(2);
+
+            let task = `На сколько процентов скорость по шоссе больше, чем скорость по лесной дороге?`;
+            let answer = `${percentageDifference}%`;
+            let solution = `Скорость на шоссе — ${speedHighway} км/ч, по лесной дороге — ${speedOffroad} км/ч. Разница: (${speedHighway} - ${speedOffroad}) / ${speedHighway} * 100 = ${percentageDifference}%.`;
+
+            taskContainer.innerHTML += `
+                <div class="task">
+                    <h3>Задание ${taskNumber}:</h3>
+                    <p><strong>Условие:</strong> ${task}</p>
+                    <input type="text" id="user-answer-path-${taskNumber}" placeholder="Введите ваш ответ">
+                    <button onclick="showAnswer('path-${taskNumber}', '${answer}')">Показать ответ</button>
+                    <p id="answer-path-${taskNumber}" class="hidden"><strong>Ответ:</strong> ${answer}</p>
+                    <button onclick="showSolution('path-${taskNumber}', '${solution}')">Показать решение</button>
+                    <p id="solution-path-${taskNumber}" class="hidden"><strong>Решение:</strong> ${solution}</p>
+                    <button onclick="checkAnswer('user-answer-path-${taskNumber}', '${answer}')">Проверить ответ</button>
+                    <p id="check-result-path-${taskNumber}" class="hidden"></p>
+                </div>
+            `;
+        }
+
+        // Генерация третьего задания
+        function generateCase3(taskNumber, villages) {
+            const taskContainer = document.getElementById('task-container-path');
+            let distance = getRandomInt(15, 25);
+            let timeOffroad = (distance / getRandomInt(30, 50)).toFixed(2);
+            let task = `Сколько времени займёт дорога от деревни ${villages[0]} до станции, если поехать по лесной дороге, расстояние — ${distance} км?`;
+            let answer = `${timeOffroad} часов`;
+            let solution = `Дистанция ${distance} км, средняя скорость по лесной дороге — 30-50 км/ч. Время: расстояние / скорость = ${timeOffroad} часов.`;
+
+            taskContainer.innerHTML += `
+                <div class="task">
+                    <h3>Задание ${taskNumber}:</h3>
+                    <p><strong>Условие:</strong> ${task}</p>
+                    <input type="text" id="user-answer-path-${taskNumber}" placeholder="Введите ваш ответ">
+                    <button onclick="showAnswer('path-${taskNumber}', '${answer}')">Показать ответ</button>
+                    <p id="answer-path-${taskNumber}" class="hidden"><strong>Ответ:</strong> ${answer}</p>
+                    <button onclick="showSolution('path-${taskNumber}', '${solution}')">Показать решение</button>
+                    <p id="solution-path-${taskNumber}" class="hidden"><strong>Решение:</strong> ${solution}</p>
+                    <button onclick="checkAnswer('user-answer-path-${taskNumber}', '${answer}')">Проверить ответ</button>
+                    <p id="check-result-path-${taskNumber}" class="hidden"></p>
+                </div>
+            `;
+        }
+
+        // Генерация четвёртого задания
+        function generateCase4(taskNumber, villages) {
+            const taskContainer = document.getElementById('task-container-path');
+            let distanceHighway = getRandomInt(100, 150);
+            let fuelEfficiency = getRandomInt(8, 12); // Случайный расход топлива от 8 до 12 литров на 100 км
+            let fuelRequired = (distanceHighway / 100 * fuelEfficiency).toFixed(2);
+
+            let task = `Сколько литров бензина потребуется для поездки по шоссе протяженностью ${distanceHighway} км, если машина расходует ${fuelEfficiency} литра на 100 км?`;
+            let answer = `${fuelRequired} литров`;
+            let solution = `Расход топлива: (дистанция / 100) * расход на 100 км = (${distanceHighway} / 100) * ${fuelEfficiency} = ${fuelRequired} литров.`;
+
+            taskContainer.innerHTML += `
+                <div class="task">
+                    <h3>Задание ${taskNumber}:</h3>
+                    <p><strong>Условие:</strong> ${task}</p>
+                    <input type="text" id="user-answer-path-${taskNumber}" placeholder="Введите ваш ответ">
+                    <button onclick="showAnswer('path-${taskNumber}', '${answer}')">Показать ответ</button>
+                    <p id="answer-path-${taskNumber}" class="hidden"><strong>Ответ:</strong> ${answer}</p>
+                    <button onclick="showSolution('path-${taskNumber}', '${solution}')">Показать решение</button>
+                    <p id="solution-path-${taskNumber}" class="hidden"><strong>Решение:</strong> ${solution}</p>
+                    <button onclick="checkAnswer('user-answer-path-${taskNumber}', '${answer}')">Проверить ответ</button>
+                    <p id="check-result-path-${taskNumber}" class="hidden"></p>
+                </div>
+            `;
+        }
+
+        // Генерация пятого задания
+        function generateCase5(taskNumber, villages) {
+            const taskContainer = document.getElementById('task-container-path');
+            let distance = getRandomInt(50, 100);
+            let timeOffroad = (distance / getRandomInt(10, 20)).toFixed(2);
+            let task = `Сколько времени займёт дорога по шоссе протяженностью ${distance} км, если скорость составляет 10-20 км/ч?`;
+            let answer = `${timeOffroad} часов`;
+            let solution = `Дистанция ${distance} км, средняя скорость по шоссе — 10-20 км/ч. Время: расстояние / скорость = ${timeOffroad} часов.`;
+
+            taskContainer.innerHTML += `
+                <div class="task">
+                    <h3>Задание ${taskNumber}:</h3>
+                    <p><strong>Условие:</strong> ${task}</p>
+                    <input type="text" id="user-answer-path-${taskNumber}" placeholder="Введите ваш ответ">
+                    <button onclick="showAnswer('path-${taskNumber}', '${answer}')">Показать ответ</button>
+                    <p id="answer-path-${taskNumber}" class="hidden"><strong>Ответ:</strong> ${answer}</p>
+                    <button onclick="showSolution('path-${taskNumber}', '${solution}')">Показать решение</button>
+                    <p id="solution-path-${taskNumber}" class="hidden"><strong>Решение:</strong> ${solution}</p>
+                    <button onclick="checkAnswer('user-answer-path-${taskNumber}', '${answer}')">Проверить ответ</button>
+                    <p id="check-result-path-${taskNumber}" class="hidden"></p>
+                </div>
+            `;
+        }
+
+        // Добавление нового типа задания (6)
+        function generateCase6(taskNumber, villages) {
+            const taskContainer = document.getElementById('task-container-path');
+            let timeHighway = getRandomInt(30, 50);
+            let timeForestRoad = getRandomInt(60, 90);
+            let totalDistance = getRandomInt(100, 150);
+            let task = `На сколько минут поездка по шоссе короче, чем поездка по лесной дороге на расстоянии ${totalDistance} км?`;
+            let answer = `${(timeForestRoad - timeHighway).toFixed(2)} минут`;
+            let solution = `Поездка по шоссе занимает ${timeHighway} минут, а по лесной дороге — ${timeForestRoad} минут. Разница: ${timeForestRoad} - ${timeHighway} = ${(timeForestRoad - timeHighway).toFixed(2)} минут.`;
+
+            taskContainer.innerHTML += `
+                <div class="task">
+                    <h3>Задание ${taskNumber}:</h3>
+                    <p><strong>Условие:</strong> ${task}</p>
+                    <input type="text" id="user-answer-path-${taskNumber}" placeholder="Введите ваш ответ">
+                    <button onclick="showAnswer('path-${taskNumber}', '${answer}')">Показать ответ</button>
+                    <p id="answer-path-${taskNumber}" class="hidden"><strong>Ответ:</strong> ${answer}</p>
+                    <button onclick="showSolution('path-${taskNumber}', '${solution}')">Показать решение</button>
+                    <p id="solution-path-${taskNumber}" class="hidden"><strong>Решение:</strong> ${solution}</p>
+                    <button onclick="checkAnswer('user-answer-path-${taskNumber}', '${answer}')">Проверить ответ</button>
+                    <p id="check-result-path-${taskNumber}" class="hidden"></p>
+                </div>
+            `;
+        }
+
+        // Добавление нового типа задания (7)
+        function generateCase7(taskNumber, villages) {
+            const taskContainer = document.getElementById('task-container-path');
+            let stopTime = getRandomInt(5, 10); // Время остановки в минуту
+            let totalStops = getRandomInt(3, 6); // Количество остановок
+            let totalDistance = getRandomInt(120, 180);
+            let task = `Сколько времени в пути составят остановки, если по пути на расстоянии ${totalDistance} км было сделано ${totalStops} остановок, каждая длится ${stopTime} минут?`;
+            let answer = `${(stopTime * totalStops)} минут`;
+            let solution = `Остановки: ${totalStops} по ${stopTime} минут. Итого: ${totalStops} * ${stopTime} = ${stopTime * totalStops} минут.`;
+
+            taskContainer.innerHTML += `
+                <div class="task">
+                    <h3>Задание ${taskNumber}:</h3>
+                    <p><strong>Условие:</strong> ${task}</p>
+                    <input type="text" id="user-answer-path-${taskNumber}" placeholder="Введите ваш ответ">
+                    <button onclick="showAnswer('path-${taskNumber}', '${answer}')">Показать ответ</button>
+                    <p id="answer-path-${taskNumber}" class="hidden"><strong>Ответ:</strong> ${answer}</p>
+                    <button onclick="showSolution('path-${taskNumber}', '${solution}')">Показать решение</button>
+                    <p id="solution-path-${taskNumber}" class="hidden"><strong>Решение:</strong> ${solution}</p>
+                    <button onclick="checkAnswer('user-answer-path-${taskNumber}', '${answer}')">Проверить ответ</button>
+                    <p id="check-result-path-${taskNumber}" class="hidden"></p>
+                </div>
+            `;
+        }
+
+        // Показ ответа
+        function showAnswer(taskId, answer) {
+            document.getElementById(`answer-${taskId}`).classList.remove('hidden');
+        }
+
+        // Показ решения
+        function showSolution(taskId, solution) {
+            document.getElementById(`solution-${taskId}`).classList.remove('hidden');
+        }
+
+        // Проверка ответа
+        function checkAnswer(inputId, correctAnswer) {
+            const userAnswer = document.getElementById(inputId).value;
+            const resultElement = document.getElementById(`check-result-${inputId}`);
+            resultElement.classList.remove('hidden');
+            if (userAnswer.trim() === correctAnswer.trim()) {
+                resultElement.innerHTML = "Ответ верный!";
+                resultElement.style.color = "green";
+            } else {
+                resultElement.innerHTML = "Ответ неверный.";
+                resultElement.style.color = "red";
+            }
+        }
+    </script>
+</body>
+</html>
+

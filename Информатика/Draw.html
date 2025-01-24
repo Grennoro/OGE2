@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задание и рисовалка</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        .controls {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            display: flex;
+            gap: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .controls label, .controls select, .controls input, .controls button {
+            font-size: 16px;
+        }
+        #canvas-container {
+            position: relative;
+            width: 80vw;
+            height: 80vh;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            margin-top: 20px;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+        button {
+            cursor: pointer;
+            padding: 5px 10px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container">
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <div class="controls">
+        <label>Цвет:</label>
+        <input type="color" id="colorPicker" value="#000000">
+        <label>Размер кисти:</label>
+        <input type="range" id="sizePicker" min="1" max="20" value="5">
+        <label>Режим:</label>
+        <select id="modeSelect">
+            <option value="draw">Рисовать</option>
+            <option value="line">Линия</option>
+            <option value="rect">Прямоугольник</option>
+            <option value="circle">Круг</option>
+            <option value="triangle">Треугольник</option>
+            <option value="erase">Ластик</option>
+        </select>
+        <button id="clearCanvas">Очистить</button>
+        <button id="saveCanvas">Сохранить</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+
+        let drawing = false;
+        let color = '#000000';
+        let size = 5;
+        let mode = 'draw';
+        let startX = 0;
+        let startY = 0;
+        let currentX = 0;
+        let currentY = 0;
+        let snapshot;
+
+        // Установка параметров цвета и размера
+        document.getElementById('colorPicker').addEventListener('input', function() {
+            color = this.value;
+        });
+
+        document.getElementById('sizePicker').addEventListener('input', function() {
+            size = this.value;
+        });
+
+        document.getElementById('modeSelect').addEventListener('change', function() {
+            mode = this.value;
+        });
+
+        document.getElementById('clearCanvas').addEventListener('click', function() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+
+        document.getElementById('saveCanvas').addEventListener('click', function() {
+            const link = document.createElement('a');
+            link.download = 'drawing.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+
+        // Начало рисования
+        canvas.addEventListener('mousedown', function(e) {
+            drawing = true;
+            startX = e.offsetX;
+            startY = e.offsetY;
+            snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        });
+
+        // Конец рисования
+        canvas.addEventListener('mouseup', function() {
+            drawing = false;
+            ctx.beginPath();
+        });
+
+        // Рисование
+        canvas.addEventListener('mousemove', function(e) {
+            if (!drawing) return;
+
+            currentX = e.offsetX;
+            currentY = e.offsetY;
+
+            if (mode === 'draw' || mode === 'erase') {
+                const strokeColor = mode === 'erase' ? '#fff' : color;
+                drawLine(startX, startY, currentX, currentY, strokeColor, size);
+                startX = currentX;
+                startY = currentY;
+            } else {
+                ctx.putImageData(snapshot, 0, 0);
+                drawShape(startX, startY, currentX, currentY);
+            }
+        });
+
+        function drawLine(x1, y1, x2, y2, strokeColor, lineWidth) {
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        }
+
+        function drawShape(x1, y1, x2, y2) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = size;
+
+            if (mode === 'line') {
+                drawLine(x1, y1, x2, y2, color, size);
+            } else if (mode === 'rect') {
+                ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+            } else if (mode === 'circle') {
+                const radius = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                ctx.beginPath();
+                ctx.arc(x1, y1, radius, 0, Math.PI * 2);
+                ctx.stroke();
+            } else if (mode === 'triangle') {
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.lineTo(x1 - (x2 - x1), y2);
+                ctx.closePath();
+                ctx.stroke();
+            }
+        }
+    </script>
+</body>
+</html>

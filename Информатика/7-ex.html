@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7 задание ОГЭ информатика</title>
+    <style>
+
+
+
+
+
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            background-image: linear-gradient(90deg, rgba(183,25,80,1) 0%, rgba(200,204,17,1) 34%, rgba(0,255,43,1) 69%, rgba(87,128,68,1) 100%);
+            align-items: center;
+        }
+        .main{
+            max-width: 700px;
+            width: 100%;
+            margin: auto;
+            background-color: whitesmoke;
+            color: black;
+            padding: 10px;
+            border-radius: 15px;
+            padding: 20px; 
+        }
+        .btn {
+            margin: 5px;
+        }
+        #userAnswer, #userIpAnswer {
+            padding: 5px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid black;
+        }
+        .result {
+            color: green;
+            margin: 20px;
+            font-size: 20px;
+        }
+        .error {
+            color: red;
+            margin: 20px;
+            font-size: 20px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: black;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+        button:hover {
+            background-color: whitesmoke;
+            color: black;
+            transition: 0.3s;
+            box-shadow: 0px 0px 10px black;
+        }
+        h1 {
+            color: black;
+            margin-bottom:50px ;
+            text-align: center;
+        }
+        .hell{
+            background-color: black;
+            color: white;
+            border-radius: 30px;
+            box-shadow: 0 5px 10px gray;
+            padding: 20px;
+            position: fixed;
+            bottom: 50px;
+            left: 90%;
+            z-index: 100;
+            text-align: center;
+        }
+        .gen{
+            display: block;
+            margin: auto;
+        }
+        h2{
+            text-align: center;
+        }
+        .tex{
+            margin: 20px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main">
+        <h1>7 задание ОГЭ</h1>
+        <button class="btn gen" onclick="generateTask()">Сгенерировать задание</button>
+         <a href="main.html" class="hell">Вернуться<br>обратно</a>
+        <!-- Задание по URL -->
+        <div id="task-url" class="task">
+            <h2>Задание по URL</h2>
+            <p id="taskDescription"></p>
+            <div id="options"></div>
+            <input class="in" type="text" id="userAnswer" placeholder="Введите ваш ответ" disabled>
+            <button class="btn" onclick="checkAnswer()">Проверить ответ</button>
+            <button class="btn" onclick="showAnswer()">Показать ответ</button>
+            <button class="btn" onclick="showSolution()">Показать решение</button>
+            <p class="result tex" id="result"></p>
+            <p class="answer tex" id="correctAnswer"></p>
+            <p class="solution tex" id="solution"></p>
+        </div>
+
+        <!-- Задание по IP-адресам -->
+        <div id="task-ip" class="task-ip">
+            <h2>Задание по IP-адресам</h2>
+            <div id="task"></div>
+            <button class="btn" onclick="showIpAnswer()">Показать ответ</button>
+            <button class="btn" onclick="showIpSolution()">Показать решение</button>
+            <input class="in" type="text" id="userIpAnswer" placeholder="Введите ваш ответ"/>
+            <button class="btn" onclick="checkIpAnswer()">Проверить ответ</button>
+            <div class="tex" id="ipAnswer"></div>
+            <div class="tex" id="ipResult"></div>
+            <div class="tex" id="ipSolution"></div>
+        </div>
+    </div>
+    <script>
+        function updateProgressForTask7() {
+            fetch('/user/progress/informatics/7', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ increment: 1 })  // Включите необходимые данные для обновления прогресса
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Прогресс обновлен');
+                }
+            })
+            .then(data => {
+                if (data.success) {
+                    console.log("Прогресс для задания 7 обновлен.");
+                    document.getElementById('result').textContent += " Прогресс обновлен.";
+                } else {
+                    console.error("Ошибка при обновлении прогресса для задания 7.");
+                    document.getElementById('result').textContent += " Ошибка при обновлении прогресса.";
+                }
+            })
+            .catch(error => console.error("Ошибка при обновлении прогресса:", error));
+        }
+
+        // Задание по URL
+        const options = [
+            { letter: 'А', value: '.com' },
+            { letter: 'Б', value: 'ftp' },
+            { letter: 'В', value: 'http' },
+            { letter: 'Г', value: 'example' },
+            { letter: 'Д', value: '://' },
+            { letter: 'Е', value: '/' },
+            { letter: 'Ж', value: '.org' },
+            { letter: 'З', value: '.html' },
+            { letter: 'И', value: '.net' },
+            { letter: 'К', value: 'site' },
+            { letter: 'Л', value: 'docs' },
+            { letter: 'М', value: '.gif' },
+            { letter: 'Н', value: 'file' },
+            { letter: 'О', value: 'https' },
+            { letter: 'П', value: 'jour' },
+            { letter: 'Р', value: 'images' },
+            { letter: 'С', value: 'index' },
+            { letter: 'Т', value: '.jpg' },
+            { letter: 'У', value: '.docx' },
+            { letter: 'Ф', value: 'server' },
+            { letter: 'Х', value: 'folder' }
+        ];
+
+        let selectedOptions = [];
+
+        function generateTask() {
+            document.getElementById('result').innerText = '';
+            document.getElementById('correctAnswer').innerText = '';
+            document.getElementById('solution').innerText = '';
+            document.getElementById('result').className = '';
+            document.getElementById('correctAnswer').style.display = 'none';
+            document.getElementById('solution').style.display = 'none';
+            document.querySelector('.task').style.display = 'none';
+            document.querySelector('.task-ip').style.display = 'none';
+
+            const taskType = Math.random() < 0.5 ? 'url' : 'ip';
+            if (taskType === 'url') {
+                document.getElementById('task-url').style.display = 'block';
+                generateUrlTask();
+            } else {
+                document.getElementById('task-ip').style.display = 'block';
+                generateIpTask();
+            }
+        }
+
+        function generateUrlTask() {
+            const protocols = ['Б', 'В', 'О'];
+            const domains = ['Г', 'К', 'П', 'Ф'];
+            const tlds = ['А', 'Ж', 'И'];
+            const folders = ['Е'];
+            const files = ['Н', 'С'];
+            const extensions = ['З', 'М', 'Т', 'У'];
+
+            const protocol = protocols[Math.floor(Math.random() * protocols.length)];
+            const domain = domains[Math.floor(Math.random() * domains.length)];
+            const tld = tlds[Math.floor(Math.random() * tlds.length)];
+            const folder = folders[Math.floor(Math.random() * folders.length)];
+            const file = files[Math.floor(Math.random() * files.length)];
+            const extension = extensions[Math.floor(Math.random() * extensions.length)];
+
+            selectedOptions = [
+                { letter: protocol, value: options.find(opt => opt.letter === protocol).value },
+                { letter: domain, value: options.find(opt => opt.letter === domain).value },
+                { letter: tld, value: options.find(opt => opt.letter === tld).value },
+                { letter: folder, value: options.find(opt => opt.letter === folder).value },
+                { letter: file, value: options.find(opt => opt.letter === file).value },
+                { letter: extension, value: options.find(opt => opt.letter === extension).value },
+                { letter: 'Д', value: '://' },
+            ];
+
+            selectedOptions.sort((a, b) => a.letter.localeCompare(b.letter));
+
+            const description = `Файл ${options.find(opt => opt.letter === file).value}${options.find(opt => opt.letter === extension).value} находится на сервере ${options.find(opt => opt.letter === domain).value}${options.find(opt => opt.letter === tld).value} и доступен по протоколу ${options.find(opt => opt.letter === protocol).value}. Запишите последовательность букв, кодирующую адрес указанного файла в сети Интернет.`;
+            const answer = `${protocol}Д${domain}${tld}${folder}${file}${extension}`;
+            const solution = `Адрес в сети Интернет формируется следующим образом: сначала протокол (${options.find(opt => opt.letter === protocol).value}), затем '://', затем сервер (${options.find(opt => opt.letter === domain).value}${options.find(opt => opt.letter === tld).value}), затем папка (${options.find(opt => opt.letter === folder).value}), и, наконец, имя файла (${options.find(opt => opt.letter === file).value}${options.find(opt => opt.letter === extension).value}). Следовательно, правильная последовательность: ${answer}.`;
+
+            document.getElementById('taskDescription').innerText = description;
+            displayOptions();
+            document.getElementById('userAnswer').dataset.answer = answer.toUpperCase();
+            document.getElementById('userAnswer').dataset.solution = solution;
+            document.getElementById('userAnswer').disabled = false;
+        }
+
+        function displayOptions() {
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            selectedOptions.forEach(option => {
+                const button = document.createElement('button');
+                button.innerText = `${option.letter}) ${option.value}`;
+                button.className = 'btn';
+                button.onclick = () => appendOption(option.letter);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function appendOption(value) {
+            const userAnswer = document.getElementById('userAnswer');
+            userAnswer.value += value;
+        }
+
+        function checkAnswer() {
+            const userAnswer = document.getElementById('userAnswer').value.trim().toUpperCase();
+            const correctAnswer = document.getElementById('userAnswer').dataset.answer;
+            if (userAnswer === correctAnswer) {
+                document.getElementById('result').innerText = 'Правильно!';
+                document.getElementById('result').className = 'result';
+                updateProgressForTask7(); // Обновление прогресса для задания URL
+            } else {
+                document.getElementById('result').innerText = 'Неправильно. Попробуйте еще раз.';
+                document.getElementById('result').className = 'error';
+            }
+        }
+
+        function showAnswer() {
+            document.getElementById('correctAnswer').innerText = 'Правильная последовательность: ' + document.getElementById('userAnswer').dataset.answer;
+            document.getElementById('correctAnswer').style.display = 'block';
+        }
+
+        function showSolution() {
+            document.getElementById('solution').innerText = document.getElementById('userAnswer').dataset.solution;
+            document.getElementById('solution').style.display = 'block';
+        }
+
+        // Задание по IP-адресам
+        let partsDict = {};
+        let correctOrder = [];
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function generateIpAddressParts() {
+            // Генерация частей IP-адреса
+            let part1 = `${getRandomInt(1, 9)}.${getRandomInt(10, 99)}`; // Десятичная дробь (2.12)
+            let part2 = `${getRandomInt(10, 99)}`; // Целое число (22)
+            let part3 = `.${getRandomInt(10, 99)}`; // Часть с точкой в начале (.30)
+            let part4 = `${getRandomInt(1, 9)}.${getRandomInt(100, 999)}`; // Два целых числа с точкой (5.121)
+
+            let parts = [part1, part2, part3, part4];
+            parts.sort(() => Math.random() - 0.5);
+
+            let labels = ['А', 'Б', 'В', 'Г'];
+            partsDict = {};
+            for (let i = 0; i < labels.length; i++) {
+                partsDict[labels[i]] = parts[i];
+            }
+        }
+
+        function formatTask(partsDict) {
+            let taskText = "На месте преступления были обнаружены четыре обрывка бумаги. Следствие установило, что на них записаны фрагменты одного IP-адреса. Криминалисты обозначили эти фрагменты буквами А, Б, В и Г:<br><br>";
+            for (let label in partsDict) {
+                taskText += `${label} - ${partsDict[label]}<br>`;
+            }
+            taskText += "<br>Восстановите IP-адрес. В ответе укажите последовательность букв, обозначающих фрагменты, в порядке, соответствующем IP-адресу.";
+            return taskText;
+        }
+
+        function findCorrectOrder(partsDict) {
+            let order = [];
+
+            // Находим первую часть (целое число)
+            for (let label in partsDict) {
+                if (!partsDict[label].includes('.')) {
+                    order.push(label);
+                    break;
+                }
+            }
+
+            // Находим часть с двумя числами (формат x.y)
+            for (let label in partsDict) {
+                if (partsDict[label].includes('.') && !partsDict[label].startsWith('.') && !partsDict[label].endsWith('.')) {
+                    order.push(label);
+                }
+            }
+
+            // Находим часть, начинающуюся с точки
+            for (let label in partsDict) {
+                if (partsDict[label].startsWith('.')) {
+                    order.push(label);
+                }
+            }
+
+            // Находим последнюю часть (десятичная дробь)
+            for (let label in partsDict) {
+                if (!order.includes(label)) {
+                    order.push(label);
+                }
+            }
+
+            return order;
+        }
+
+        function reconstructIp(partsDict, correctOrder) {
+            let ip = correctOrder.map(label => partsDict[label]).join('');
+            ip = ip.replace('..', '.');
+            return ip;
+        }
+
+        function validateIp(ipAddress) {
+            let parts = ipAddress.split('.');
+            if (parts.length !== 4) return false;
+            return parts.every(part => !isNaN(part) && part >= 0 && part <= 255);
+        }
+
+        function generateValidTask() {
+            let order;
+            do {
+                generateIpAddressParts();
+                order = findCorrectOrder(partsDict);
+            } while (!validateIp(reconstructIp(partsDict, order)));
+            correctOrder = order;
+        }
+
+        function generateIpTask() {
+            generateValidTask();
+            document.getElementById('task').innerHTML = formatTask(partsDict);
+            document.getElementById('ipAnswer').innerHTML = "";
+            document.getElementById('ipResult').innerHTML = "";
+            document.getElementById('userIpAnswer').value = "";
+            document.getElementById('ipSolution').innerHTML = "";
+        }
+
+        function showIpAnswer() {
+            if (correctOrder.length > 0) {
+                document.getElementById('ipAnswer').innerHTML = "Правильный ответ: " + correctOrder.join("");
+            } else {
+                document.getElementById('ipAnswer').innerHTML = "Сначала сгенерируйте задание.";
+            }
+        }
+
+        function showIpSolution() {
+            const ip = reconstructIp(partsDict, correctOrder);
+            const solutionText = `
+                IP-адрес представляет собой четыре разделенных точками числа, каждое из которых не больше 255.<br>
+                Правильный IP-адрес: ${ip}<br>
+                Последовательность фрагментов: ${correctOrder.join("")}
+            `;
+            document.getElementById('ipSolution').innerHTML = solutionText;
+        }
+
+        
+        function validateUserIpAnswer(ipAddress) {
+            // Паттерн для проверки формата IP-адреса
+            const ipPattern = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+            const match = ipAddress.match(ipPattern);
+
+            if (!match) return false;
+
+            // Проверяем, что каждое число в IP-адресе находится в диапазоне от 0 до 255
+            return match.slice(1).every(num => Number(num) >= 0 && Number(num) <= 255);
+        }
+
+        function checkIpAnswer() {
+            const userAnswer = document.getElementById('userIpAnswer').value.toUpperCase().replace(/\s+/g, '');
+            const reconstructedIp = reconstructIp(partsDict, correctOrder);
+
+            // Проверяем, ввел ли пользователь буквы или IP-адрес
+            if (/^[А-Я]+$/.test(userAnswer)) {
+                // Если пользователь ввел буквы, проверяем их порядок
+                if (userAnswer === correctOrder.join("")) {
+                    document.getElementById('ipResult').innerText = 'Правильно! Ваш ответ совпадает с одним из возможных вариантов.';
+                    document.getElementById('ipResult').className = 'result';
+                    updateProgressForTask7();
+                } else {
+                    document.getElementById('ipResult').innerText = 'Неправильно. Попробуйте еще раз. Если существует несколько вариантов, укажите любой из них.';
+                    document.getElementById('ipResult').className = 'error';
+                }
+            } else {
+                // Проверяем, соответствует ли ответ формату IP-адреса
+                if (!validateUserIpAnswer(userAnswer)) {
+                    document.getElementById('ipResult').innerText = 'Ответ не соответствует формату IP-адреса (x.x.x.x). Попробуйте еще раз.';
+                    document.getElementById('ipResult').className = 'error';
+                    return;
+                }
+
+                // Проверка совпадения с правильным IP-адресом
+                if (userAnswer === reconstructedIp) {
+                    document.getElementById('ipResult').innerText = 'Правильно! Ваш ответ совпадает с одним из возможных вариантов.';
+                    document.getElementById('ipResult').className = 'result';
+                    updateProgressForTask7();
+                } else {
+                    document.getElementById('ipResult').innerText = 'Неправильно. Попробуйте еще раз. Если существует несколько вариантов, укажите любой из них.';
+                    document.getElementById('ipResult').className = 'error';
+                }
+            }
+        }
+
+
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Code Tester</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(9,121,91,1) 35%, rgba(0,255,36,1) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            height: 100vh;
+        }
+        h1 {
+            margin: 20px;
+            color: #333;
+        }
+        #editor-container {
+            width: 80%;
+            max-width: 700px;
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            margin:auto;
+        }
+        #editor {
+            width: 100%;
+            height: 300px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 16px;
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #fff;
+            white-space: pre;
+            overflow: auto;
+            resize: vertical;
+        }
+        #output {
+            width: 80%;
+            max-width: 700px;
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+            text-align: left;
+            margin:auto;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: black;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: whitesmoke;
+            color: black;
+            box-shadow: 0px 0px 10px black;
+        }
+        select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        #problem {
+            width: 80%;
+            max-width: 700px;
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+            text-align: left;
+            font-size: 16px;
+            white-space: pre-wrap;
+            margin:auto;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            text-align: left;
+            font-size: 14px;
+        }
+        .passed {
+            border-color: #28a745;
+            background-color: #d4edda;
+        }
+        .failed {
+            border-color: #dc3545;
+            background-color: #f8d7da;
+        }
+        pre {
+            margin: 0;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+        #current-task {
+            width: 80%;
+            max-width: 700px;
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+            text-align: left;
+            font-size: 16px;
+            margin:auto;
+        }
+        .main {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            max-width: 700px;
+            width: 100%;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main">
+        <h1>15.2 Задание</h1>
+        <div id="current-task">Текущее задание: Ничего не выбрано</div>
+        <select id="task-selector">
+            <option value="">Выберите задачу</option>
+        </select>
+        <button onclick="generateTask()">Выбрать указанное задание</button>
+        <div id="problem">Выберите задачу из списка ниже или нажмите "Далее" для перехода к следующей задаче.</div>
+        <div id="editor-container">
+            <textarea id="editor" placeholder="Enter your Python code here..."></textarea>
+        </div>
+        <button onclick="runCode()">Run</button>
+        <div id="output"></div>
+    </div>
+    <!-- Prism.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+
+    <script>
+        let tasks = [];
+        let currentTaskIndex = 0;
+
+        function populateTaskSelector(taskList) {
+            const taskSelector = document.getElementById('task-selector');
+            taskSelector.innerHTML = '<option value="">Выберите задачу</option>'; // Reset selector
+            taskList.forEach((task, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `Task ${index + 1}`;
+                taskSelector.appendChild(option);
+            });
+        }
+
+        function fetchTasks() {
+            fetch('/get_tasks')
+            .then(response => response.json())
+            .then(data => {
+                tasks = data.tasks;
+                populateTaskSelector(tasks);
+                if (tasks.length > 0) {
+                    displayTask(0); // Display the first task
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching tasks:', error);
+            });
+        }
+
+        function generateTask() {
+            const taskSelector = document.getElementById('task-selector');
+            const selectedIndex = taskSelector.value;
+
+            if (selectedIndex === '') {
+                // Show the next task in the list
+                currentTaskIndex = (currentTaskIndex + 1) % tasks.length;
+                displayTask(currentTaskIndex);
+            } else {
+                currentTaskIndex = parseInt(selectedIndex, 10);
+                displayTask(currentTaskIndex);
+            }
+        }
+
+        function displayTask(index) {
+            const task = tasks[index];
+            document.getElementById('problem').innerText = task.task;
+            document.getElementById('current-task').innerText = `Текущее задание: Task ${index + 1}`;
+        }
+
+        function runCode() {
+            const code = document.getElementById('editor').value;
+            const task = tasks[currentTaskIndex];
+
+            // Update textarea to display syntax highlighting
+            const editor = document.getElementById('editor');
+            editor.innerHTML = Prism.highlight(editor.value, Prism.languages.python, 'python');
+
+            fetch('/run_code', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ code: code, taskIndex: currentTaskIndex })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const outputDiv = document.getElementById('output');
+                outputDiv.innerHTML = '';
+
+                data.results.forEach(result => {
+                    const resultDiv = document.createElement('div');
+                    resultDiv.className = 'result ' + (result.status === 'Passed' ? 'passed' : 'failed');
+
+                    let content = `<strong>Input:</strong><pre>${result.input}</pre>
+                                   <strong>Output:</strong><pre>${result.output}</pre>`;
+
+                    if (result.status === 'Failed') {
+                        content += `<strong>Expected:</strong><pre>${result.expected}</pre>`;
+                    }
+
+                    resultDiv.innerHTML = content;
+                    outputDiv.appendChild(resultDiv);
+                });
+            })
+            .catch(error => {
+                const outputDiv = document.getElementById('output');
+                outputDiv.innerHTML = 'Error: ' + error.message;
+            });
+        }
+
+        // При загрузке страницы загрузить задачи
+        fetchTasks();
+    </script>
+</body>
+</html>
+
+
+
