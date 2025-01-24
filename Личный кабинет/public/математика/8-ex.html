@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор заданий ОГЭ - Тип 8 (дроби)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Wittgenstein:wght@400;display=swap');
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(120deg, #3A6073 0%, #16222A 100%);
+            font-family: 'Wittgenstein', sans-serif;
+            color: white;
+            text-align: center;
+        }
+        .task-container {
+            max-width: 700px;
+            background-color: whitesmoke;
+            color: black;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+            margin: 20px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        .task {
+            font-size: 18px;
+            margin: 15px 0;
+            white-space: pre-line;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: black;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+            margin: 5px;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: whitesmoke;
+            color: black;
+            box-shadow: 0px 0px 10px black;
+        }
+        input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid black;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        #answer, #solution, #check-result {
+            display: none;
+            padding: 15px;
+            background-color: #f1f1f1;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .hell {
+            background-color: black;
+            color: white;
+            border-radius: 30px;
+            box-shadow: 0 5px 10px gray;
+            padding: 20px;
+            position: fixed;
+            bottom: 50px;
+            left: 90%;
+            z-index: 100;
+            text-align: center;
+        }
+        .fraction {
+            display: inline-block;
+            vertical-align: middle;
+            text-align: center;
+        }
+        .fraction > span {
+            display: block;
+            padding: 0 5px;
+        }
+        .fraction > .denominator {
+            border-top: 2px solid black;
+        }
+    </style>
+</head>
+<body>
+    <div class="task-container">
+        <a href="matem.html" class="hell">Вернуться<br>обратно</a>
+        <h1>Генератор заданий ОГЭ - Тип 8 (дроби)</h1>
+        <p id="task" class="task">Нажмите "Сгенерировать задание" для начала.</p>
+
+        <input type="text" id="userAnswer" placeholder="Введите ваш ответ"/>
+        <button onclick="checkAnswer()">Проверить ответ</button>
+        <button onclick="showAnswer()">Показать ответ</button>
+        <button onclick="showSolution()">Показать решение</button>
+        <button onclick="generateTask()">Сгенерировать задание</button>
+        
+        <div id="answer">Ответ: <span id="correctAnswer"></span></div>
+        <div id="solution">Решение: <span id="correctSolution"></span></div>
+        <div id="check-result"></div>
+    </div>
+
+    <script>
+        let correctAnswerGlobal;
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function gcd(a, b) {
+            while (b !== 0) {
+                [a, b] = [b, a % b];
+            }
+            return a;
+        }
+
+        function simplifyFraction(numerator, denominator) {
+            const divisor = gcd(numerator, denominator);
+            return [numerator / divisor, denominator / divisor];
+        }
+
+        function isWholeNumber(num) {
+            return Number.isInteger(num);
+        }
+
+        function generateTask() {
+            const taskType = getRandomInt(1, 10); // Увеличено количество типов заданий до 10
+            let task = '';
+            let correctAnswer;
+            let solution;
+
+            switch (taskType) {
+                case 1:
+                    // Сложение дробей с разными знаменателями, итог — целое число
+                    let numerator1 = getRandomInt(100, 300);
+                    let denominator1 = getRandomInt(50, 100);
+                    let numerator2 = getRandomInt(100, 250);
+                    let denominator2 = getRandomInt(50, 100);
+
+                    const commonDenominator = denominator1 * denominator2;
+                    const newNumerator1 = numerator1 * denominator2;
+                    const newNumerator2 = numerator2 * denominator1;
+                    const finalNumerator = newNumerator1 + newNumerator2;
+                    const [simpleNumerator, simpleDenominator] = simplifyFraction(finalNumerator, commonDenominator);
+
+                    if (simpleNumerator % simpleDenominator === 0) {
+                        task = `Сложите и сократите две дроби: `;
+                        task += `<span class="fraction"><span>${numerator1}</span><span class="denominator">${denominator1}</span></span> + <span class="fraction"><span>${numerator2}</span><span class="denominator">${denominator2}</span></span>`;
+                        correctAnswer = simpleNumerator / simpleDenominator;
+                        solution = `Приводим дроби к общему знаменателю (${commonDenominator}): новый числитель = ${newNumerator1} + ${newNumerator2} = ${finalNumerator}. После сокращения дробь = ${simpleNumerator}/${simpleDenominator}, что равно ${correctAnswer}.`;
+                    } else {
+                        generateTask(); // Если результат не целый, перезапускаем задание
+                        return;
+                    }
+                    break;
+
+                case 2:
+                    // Разложение выражения (a² - b²) на множители
+                    const a = getRandomInt(2, 12);
+                    const b = getRandomInt(2, 12);
+                    task = `Разложите выражение (a² - b²) на множители при a = ${a}, b = ${b}.`;
+                    correctAnswer = (a - b) * (a + b);
+                    if (!isWholeNumber(correctAnswer)) {
+                        generateTask(); // Если результат не целый, перезапускаем задание
+                        return;
+                    }
+                    solution = `Используем формулу разности квадратов: a² - b² = (a - b)(a + b). Подставляем значения a = ${a}, b = ${b}, результат — (${a} - ${b})(${a} + ${b}) = ${correctAnswer}.`;
+                    break;
+
+                case 3:
+                    // Упрощение выражения с переменными
+                    const x = getRandomInt(2, 10);
+                    const y = getRandomInt(2, 10);
+                    task = `Найдите значение выражения: (x² + 2xy + y²) при x = ${x}, y = ${y}.`;
+                    correctAnswer = x * x + 2 * x * y + y * y;
+                    if (!isWholeNumber(correctAnswer)) {
+                        generateTask(); // Если результат не целый, перезапускаем задание
+                        return;
+                    }
+                    solution = `Подставляем значения x = ${x} и y = ${y} в выражение (x² + 2xy + y²): (${x}² + 2 * ${x} * ${y} + ${y}²) = ${correctAnswer}.`;
+                    break;
+
+                case 4:
+                    // Упрощение сложного выражения
+                    const c = getRandomInt(3, 6);
+                    const d = getRandomInt(1, 3);
+                    const x1 = getRandomInt(2, 10);
+                    const y1 = getRandomInt(2, 10);
+                    task = `Найдите значение выражения: ${c}x - ${d}y + ${c}(x - y) при x = ${x1}, y = ${y1}.`;
+                    correctAnswer = c * x1 - d * y1 + c * (x1 - y1);
+                    if (!isWholeNumber(correctAnswer)) {
+                        generateTask(); // Если результат не целый, перезапускаем задание
+                        return;
+                    }
+                    solution = `Подставляем значения x = ${x1} и y = ${y1} в выражение ${c}x - ${d}y + ${c}(x - y):\n${correctAnswer}.`;
+                    break;
+
+                case 5:
+                    // Сложное выражение с дробями и переменной
+                    let num1 = getRandomInt(3, 6);
+                    let den1 = getRandomInt(7, 10);
+                    let num2 = getRandomInt(2, 5);
+                    let den2 = getRandomInt(4, 8);
+                    const variable1 = 'x';
+                    const valueX = getRandomInt(2, 6);
+
+                    let resultNumerator = num1 * den2;
+                    let resultDenominator = den1 * num2;
+
+                    if (resultNumerator % resultDenominator === 0) {
+                        task = `Упростите дробь: `;
+                        task += `<span class="fraction"><span>${num1}${variable1}</span><span class="denominator">${den1}</span></span> / <span class="fraction"><span>${num2}</span><span class="denominator">${den2}${variable1}</span></span>`;
+                        correctAnswer = resultNumerator / resultDenominator;
+                        solution = `Сокращаем дробь: (${num1}${variable1})/${den1} / (${num2}${variable1})/${den2} = ${correctAnswer}.`;
+                    } else {
+                        generateTask(); // Если результат не целый, перезапускаем задание
+                        return;
+                    }
+                    break;
+
+                case 6:
+                    // Возведение дроби в степень
+                    let baseNum = getRandomInt(2, 5);
+                    let baseDen = getRandomInt(5, 10);
+                    let exponent = getRandomInt(2, 3);
+
+                    task = `Возведите в степень дробь: `;
+                    task += `<span class="fraction"><span>${baseNum}</span><span class="denominator">${baseDen}</span></span>^${exponent}`;
+                    correctAnswer = Math.pow(baseNum, exponent) + ' / ' + Math.pow(baseDen, exponent);
+                    if (!isWholeNumber(correctAnswer)) {
+                        generateTask(); // Если результат не целый, перезапускаем задание
+                        return;
+                    }
+                    solution = `Возводим числитель и знаменатель в степень: ${baseNum}^${exponent} = ${Math.pow(baseNum, exponent)}, ${baseDen}^${exponent} = ${Math.pow(baseDen, exponent)}, результат = ${correctAnswer}.`;
+                    break;
+
+                case 7:
+                    // Упрощение дробей с двумя переменными
+                    let numeratorA = getRandomInt(3, 8);
+                    let denominatorA = getRandomInt(6, 10);
+                    let numeratorB = getRandomInt(2, 6);
+                    let denominatorB = getRandomInt(4, 8);
+                    const var1 = 'x';
+                    const var2 = 'y';
+
+                    task = `Упростите выражение с дробями и переменными: `;
+                    task += `<span class="fraction"><span>${numeratorA}${var1}</span><span class="denominator">${denominatorA}${var2}</span></span> / <span class="fraction"><span>${numeratorB}${var1}</span><span class="denominator">${denominatorB}${var2}</span></span>`;
+
+                    const resultNum = numeratorA * denominatorB;
+                    const resultDenom = denominatorA * numeratorB;
+
+                    correctAnswer = resultNum / resultDenom;
+                    if (!isWholeNumber(correctAnswer)) {
+                        generateTask(); // Если результат не целый, перезапускаем задание
+                        return;
+                    }
+                    solution = `Упрощаем: числитель = ${resultNum}, знаменатель = ${resultDenom}. После сокращения результат: ${correctAnswer}.`;
+                    break;
+
+                case 8:
+                    // Сложение двух дробей с одинаковым знаменателем
+                    let num3 = getRandomInt(100, 200);
+                    let num4 = getRandomInt(100, 200);
+                    let commonDenom = getRandomInt(50, 100);
+
+                    task = `Сложите дроби: `;
+                    task += `<span class="fraction"><span>${num3}</span><span class="denominator">${commonDenom}</span></span> + <span class="fraction"><span>${num4}</span><span class="denominator">${commonDenom}</span></span>`;
+
+                    const sumNumerator = num3 + num4;
+                    correctAnswer = sumNumerator / commonDenom;
+                    if (!isWholeNumber(correctAnswer)) {
+                        generateTask(); // Если результат не целый, перезапускаем задание
+                        return;
+                    }
+
+                    solution = `Складываем числители: ${num3} + ${num4} = ${sumNumerator}. Ответ = ${correctAnswer}.`;
+                    break;
+
+                case 9:
+                    // Разложение выражений с кубом суммы
+                    const m = getRandomInt(1, 5);
+                    const n = getRandomInt(1, 5);
+                    task = `Разложите выражение: (m + n)³ при m = ${m}, n = ${n}.`;
+                    correctAnswer = Math.pow(m + n, 3);
+                    if (!isWholeNumber(correctAnswer)) {
+                        generateTask(); // Если результат не целый, перезапускаем задание
+                        return;
+                    }
+                    solution = `Используем формулу куба суммы: (m + n)³ = ${m}³ + 3 * ${m}² * ${n} + 3 * ${m} * ${n}² + ${n}³. Подставляем значения и считаем результат: ${correctAnswer}.`;
+                    break;
+
+                case 10:
+                    // Сложение трёх дробей с переменными
+                    let numeratorX = getRandomInt(1, 5);
+                    let denominatorX = getRandomInt(6, 10);
+                    let numeratorY = getRandomInt(1, 5);
+                    let denominatorY = getRandomInt(6, 10);
+                    let numeratorZ = getRandomInt(1, 5);
+                    let denominatorZ = getRandomInt(6, 10);
+                    const varX = 'x';
+                    const varY = 'y';
+                    const varZ = 'z';
+
+                    task = `Найдите сумму дробей с переменными: `;
+                    task += `<span class="fraction"><span>${numeratorX}${varX}</span><span class="denominator">${denominatorX}</span></span> + <span class="fraction"><span>${numeratorY}${varY}</span><span class="denominator">${denominatorY}</span></span> + <span class="fraction"><span>${numeratorZ}${varZ}</span><span class="denominator">${denominatorZ}</span></span>`;
+
+                    const commonDenominatorZ = denominatorX * denominatorY * denominatorZ;
+                    const newNumeratorX = numeratorX * denominatorY * denominatorZ;
+                    const newNumeratorY = numeratorY * denominatorX * denominatorZ;
+                    const newNumeratorZ = numeratorZ * denominatorX * denominatorY;
+
+                    const totalNumerator = newNumeratorX + newNumeratorY + newNumeratorZ;
+                    correctAnswer = totalNumerator / commonDenominatorZ;
+
+                    if (!isWholeNumber(correctAnswer)) {
+                        generateTask(); // Если результат не целый, перезапускаем задание
+                        return;
+                    }
+
+                    solution = `Приводим к общему знаменателю и считаем числитель: результат = ${correctAnswer}.`;
+                    break;
+
+                default:
+                    console.log("Ошибка: неправильный тип задания.");
+                    return;
+            }
+
+            correctAnswerGlobal = correctAnswer;
+            document.getElementById("task").innerHTML = task;
+            document.getElementById("correctAnswer").innerText = correctAnswer;
+            document.getElementById("correctSolution").innerText = solution;
+            document.getElementById("answer").style.display = "none";
+            document.getElementById("solution").style.display = "none";
+            document.getElementById("check-result").style.display = "none";
+            document.getElementById("userAnswer").value = '';
+        }
+
+        function checkAnswer() {
+            const userAnswer = document.getElementById("userAnswer").value.trim();
+            const resultDiv = document.getElementById("check-result");
+
+            if (userAnswer === correctAnswerGlobal.toString()) {
+                resultDiv.style.display = "block";
+                resultDiv.style.color = "green";
+                resultDiv.innerText = "Правильно!";
+            } else {
+                resultDiv.style.display = "block";
+                resultDiv.style.color = "red";
+                resultDiv.innerText = `Неправильно. Правильный ответ: ${correctAnswerGlobal}`;
+            }
+        }
+
+        function showAnswer() {
+            document.getElementById("answer").style.display = "block";
+        }
+
+        function showSolution() {
+            document.getElementById("solution").style.display = "block";
+        }
+
+        generateTask(); // Генерация первого задания при загрузке страницы
+    </script>
+</body>
+</html>

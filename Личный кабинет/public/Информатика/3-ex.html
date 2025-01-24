@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор логических заданий 3 задание ОГЭ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            text-align: center;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #4e54c8, #8f94fb, #ffc371, #ff5f6d);
+            color: black;
+        }
+        .main {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            max-width: 700px;
+            width: 100%;
+            margin: 20px;
+        }
+        .question {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        input[type="number"] {
+            padding: 5px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid black;
+            margin-top: 10px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: black;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: whitesmoke;
+            color: black;
+            transition: 0.3s;
+            box-shadow: 0px 0px 10px black;
+        }
+        .ans {
+            font-size: 20px;
+            margin-top: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+        .hell{
+            background-color: black;
+            color: white;
+            border-radius: 30px;
+            box-shadow: 0 5px 10px gray;
+            padding: 20px;
+            position: fixed;
+            bottom: 50px;
+            left: 90%;
+            z-index: 100;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <a href="main.html" class="hell">Вернуться<br>обратно</a>
+    <div class="main">
+        <h1>3 Задание ОГЭ</h1>
+        <div class="question" id="question"></div>
+        <input type="number" id="answer" placeholder="Ваш ответ">
+        <br>
+        <button onclick="generateTask()">Сгенерировать задание</button>
+        <button onclick="checkAnswer()">Ответить</button>
+        <button onclick="showAnswer()">Показать ответ</button>
+        <button onclick="showSolution()">Показать решение</button>
+        <div class="ans" id="feedback"></div>
+        <div class="ans hidden" id="correct-answer"></div>
+        <div class="ans hidden" id="solution"></div>
+    </div>
+
+    <script>
+        function generateTask() {
+            document.getElementById("feedback").textContent = '';
+            document.getElementById("answer").value = '';
+            document.getElementById("correct-answer").classList.add("hidden");
+            document.getElementById("solution").classList.add("hidden");
+
+            // Случайный выбор типа задания
+            const taskType = Math.floor(Math.random() * 5);
+            let questionText = "";
+            let answer = "";
+            let solutionText = "";
+
+            if (taskType === 0) {
+                // Тип задания 1: Найти единственное подходящее число из четырёх
+                // Гарантируем, что одно число будет нечётным и меньше или равно 500, а остальные нет
+                const correctNumber = Math.floor(Math.random() * 250) * 2 + 1; // нечётное число <= 500
+                const otherNumbers = [
+                    Math.floor(Math.random() * 500) + 501, // число > 500
+                    Math.floor(Math.random() * 500) + 501, // число > 500
+                    Math.floor(Math.random() * 250) * 2    // чётное число <= 500
+                ];
+                const numbers = [correctNumber, ...otherNumbers].sort(() => Math.random() - 0.5); // перемешиваем
+
+                questionText = `Дано четыре числа: ${numbers.join(", ")}. Для какого из приведённых чисел истинно высказывание: НЕ (Число > 500) И (Число нечётное).`;
+                answer = correctNumber;
+                solutionText = `Число должно быть нечётным и меньше или равно 500. Подходит число: ${answer}.`;
+
+            } else if (taskType === 1) {
+                // Тип задания 2: Подсчет чётных двузначных чисел
+                questionText = "Определите количество натуральных двузначных чисел, для которых истинно логическое выражение: НЕ (x нечётное) И НЕ (x > 51).";
+                const validNumbers = [];
+                for (let x = 10; x <= 51; x++) {
+                    if (x % 2 === 0) validNumbers.push(x);
+                }
+                answer = validNumbers.length;
+                solutionText = `Количество двузначных чётных чисел, меньше или равно 51, составляет ${answer}.`;
+
+            } else if (taskType === 2) {
+                // Тип задания 3: Найти наибольшее число, удовлетворяющее условию
+                const upperLimit = Math.floor(Math.random() * 10) + 5;
+                questionText = `Напишите наибольшее натуральное число x, для которого истинно высказывание: (x < ${upperLimit + 1}) И НЕ (x < ${upperLimit - 1}).`;
+                answer = upperLimit;
+                solutionText = `Наибольшее число, которое меньше ${upperLimit + 1} и больше или равно ${upperLimit - 1}, это ${answer}.`;
+
+            } else if (taskType === 3) {
+                // Тип задания 4: Подсчет чисел в диапазоне
+                const rangeStart = Math.floor(Math.random() * 20) + 10;
+                const rangeEnd = rangeStart + Math.floor(Math.random() * 10) + 5;
+                questionText = `Определите количество натуральных чисел x, для которых истинно логическое выражение: НЕ (x < ${rangeStart}) И (x < ${rangeEnd}).`;
+                const validNumbers = [];
+                for (let x = rangeStart; x < rangeEnd; x++) {
+                    validNumbers.push(x);
+                }
+                answer = validNumbers.length;
+                solutionText = `Количество натуральных чисел от ${rangeStart} до ${rangeEnd - 1} составляет ${answer}.`;
+
+            } else if (taskType === 4) {
+                // Тип задания 5: Найти минимальное число, удовлетворяющее условиям
+                const threshold = Math.floor(Math.random() * 50) + 20;
+                questionText = `Напишите наименьшее целое число, для которого истинно высказывание: НЕ (x < ${threshold}) И НЕ (x > ${threshold + 10}).`;
+                answer = threshold;
+                solutionText = `Минимальное число, удовлетворяющее условию, это ${answer}, так как оно больше или равно ${threshold} и меньше или равно ${threshold + 10}.`;
+            }
+
+            document.getElementById("question").textContent = questionText;
+            document.getElementById("correct-answer").textContent = `Ответ: ${answer}`;
+            document.getElementById("solution").textContent = solutionText;
+
+            window.currentAnswer = answer;
+        }
+
+        async function checkAnswer() {
+            const userAnswer = document.getElementById("answer").value;
+            if (userAnswer == window.currentAnswer) {
+                document.getElementById("feedback").textContent = "Правильно!";
+                console.log("Отправка запроса на обновление прогресса...");  // Проверка отправки запроса
+
+                // Отправка прогресса на сервер
+                try {
+                    const response = await fetch('/user/progress/informatics', {  // Обновленный URL
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        },
+                        body: JSON.stringify({ taskId: '3', increment: 1 })  // Универсальные параметры для обновления прогресса
+                    });
+                    if (response.ok) {
+                        const result = await response.json();
+                        console.log("Прогресс успешно обновлен:", result);  // Подтверждение обновления
+                        document.getElementById("feedback").textContent += " Прогресс обновлен.";
+                    } else {
+                        console.error("Ошибка обновления прогресса:", response.statusText);
+                        document.getElementById("error-message").textContent = 'Ошибка обновления прогресса';
+                    }
+                } catch (error) {
+                    console.error("Ошибка сети при обновлении прогресса:", error);
+                    document.getElementById("error-message").textContent = 'Ошибка сети';
+                }
+            } else {
+                document.getElementById("feedback").textContent = `Неправильно. Попробуйте снова.`;
+            }
+        }
+
+
+
+        function showAnswer() {
+            document.getElementById("correct-answer").classList.remove("hidden");
+        }
+
+        function showSolution() {
+            document.getElementById("solution").classList.remove("hidden");
+        }
+
+        window.onload = generateTask;
+    </script>
+</body>
+</html>

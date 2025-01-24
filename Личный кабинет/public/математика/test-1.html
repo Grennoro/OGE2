@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор заданий ОГЭ (Печки)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .task {
+            margin-bottom: 20px;
+        }
+        button {
+            margin-top: 10px;
+        }
+        .hidden {
+            display: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #d3d3d3;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        svg {
+            display: block;
+            margin: 20px auto;
+            background-color: #f9f9f9;
+        }
+        text {
+            font-size: 14px;
+            fill: black;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Генератор заданий ОГЭ (Печки)</h1>
+
+<div id="task-container">
+    <!-- Задания будут сгенерированы здесь -->
+</div>
+
+<button id="generate-button">Сгенерировать задания</button>
+
+<script>
+    const caseFunctions = [generateCase1, generateCase2, generateCase3, generateCase4, generateCase5];
+
+    document.getElementById('generate-button').addEventListener('click', generateTasks);
+
+    let stoveData = [];
+    let bathSize = {};
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    function generateTasks() {
+        const taskContainer = document.getElementById('task-container');
+        taskContainer.innerHTML = '';  // Очищаем контейнер для новых задач
+
+        generateTableData();
+        generateBathSize();
+
+        generateCase1(1);
+        generateCase2(2);
+        generateCase3(3);
+        generateCase4(4);
+        generateCase5(5);
+    }
+
+    function generateTableData() {
+        stoveData = [
+            {
+                type: 'Дровяная',
+                volume: getRandomInt(8, 12),
+                weight: getRandomInt(35, 45),
+                cost: getRandomInt(15000, 20000)
+            },
+            {
+                type: 'Дровяная',
+                volume: getRandomInt(10, 16),
+                weight: getRandomInt(40, 50),
+                cost: getRandomInt(17000, 21000)
+            },
+            {
+                type: 'Электрическая',
+                volume: getRandomInt(9, 15),
+                weight: getRandomInt(10, 20),
+                cost: getRandomInt(14000, 18000)
+            }
+        ];
+
+        shuffleArray(stoveData);
+    }
+
+    function generateBathSize() {
+        bathSize = {
+            length: (getRandomInt(3, 5) + Math.random()).toFixed(2),
+            width: (getRandomInt(2, 3) + Math.random()).toFixed(2),
+            height: getRandomInt(2, 3).toFixed(2)
+        };
+    }
+
+    function generateDescription() {
+        return `
+            Хозяин дачного участка строит баню с парным отделением. Парное отделение имеет размеры: длина ${bathSize.length} м, ширина ${bathSize.width} м, высота ${bathSize.height} м. Окон в парном отделении нет, для доступа внутрь планируется дверь шириной 60 см, высота дверного проема 1,8 м. 
+            Для прогрева парного отделения можно использовать электрическую или дровяную печь. В таблице представлены характеристики трех печей:
+            <br><br>
+            <table>
+                <tr>
+                    <th>Номер печи</th>
+                    <th>Тип</th>
+                    <th>Объем помещения (куб. м)</th>
+                    <th>Масса (кг)</th>
+                    <th>Стоимость (руб.)</th>
+                </tr>
+                ${stoveData.map((stove, index) => 
+                `<tr>
+                    <td>${index + 1}</td>
+                    <td>${stove.type}</td>
+                    <td>${stove.volume}</td>
+                    <td>${stove.weight}</td>
+                    <td>${stove.cost}</td>
+                </tr>`
+                ).join('')}
+            </table>
+            <br>
+            Для установки дровяной печи дополнительных затрат не потребуется. Установка электрической печи потребует подведения специального кабеля, что обойдется в 6500 руб.
+        `;
+    }
+
+    function generateCase1(taskNumber) {
+        const taskContainer = document.getElementById('task-container');
+        const description = generateDescription();
+        const costs = stoveData.map(stove => stove.cost);
+        const stoveNumbers = [1, 2, 3];
+        const shuffledCosts = costs.slice().sort(() => Math.random() - 0.5);
+
+        let task = `
+            ${description}
+            <br>
+            Установите соответствие между стоимостью и номерами печей. Стоимость: ${shuffledCosts.join(', ')} руб.
+        `;
+
+        let answer = stoveNumbers.join('');
+        let solution = `Номера печей в правильном порядке: ${stoveNumbers.join(', ')}`;
+
+        taskContainer.innerHTML += `
+            <div class="task">
+                <h3>Задание ${taskNumber}:</h3>
+                <p><strong>Условие:</strong> ${task}</p>
+                <input type="text" id="user-answer-${taskNumber}" placeholder="Введите ваш ответ">
+                <button onclick="showAnswer(${taskNumber}, '${answer}')">Показать ответ</button>
+                <p id="answer-${taskNumber}" class="hidden"><strong>Ответ:</strong> ${answer}</p>
+                <button onclick="showSolution(${taskNumber}, '${solution}')">Показать решение</button>
+                <p id="solution-${taskNumber}" class="hidden"><strong>Решение:</strong> ${solution}</p>
+            </div>
+        `;
+    }
+
+    function generateCase2(taskNumber) {
+        const taskContainer = document.getElementById('task-container');
+        const length = bathSize.length;
+        const width = bathSize.width;
+        const height = bathSize.height;
+
+        let task = `
+            Найдите объём парного отделения строящейся бани. Размеры: длина ${length} м, ширина ${width} м, высота ${height} м.
+        `;
+        let answer = (length * width * height).toFixed(2) + ' куб. м';
+        let solution = `Объём = длина × ширина × высота = ${length} × ${width} × ${height} = ${answer}`;
+
+        taskContainer.innerHTML += `
+            <div class="task">
+                <h3>Задание ${taskNumber}:</h3>
+                <p><strong>Условие:</strong> ${task}</p>
+                <input type="text" id="user-answer-${taskNumber}" placeholder="Введите ваш ответ">
+                <button onclick="showAnswer(${taskNumber}, '${answer}')">Показать ответ</button>
+                <p id="answer-${taskNumber}" class="hidden"><strong>Ответ:</strong> ${answer}</p>
+                <button onclick="showSolution(${taskNumber}, '${solution}')">Показать решение</button>
+                <p id="solution-${taskNumber}" class="hidden"><strong>Решение:</strong> ${solution}</p>
+            </div>
+        `;
+    }
+
+    function generateCase3(taskNumber) {
+        const taskContainer = document.getElementById('task-container');
+        const length = bathSize.length;
+        const width = bathSize.width;
+        const height = bathSize.height;
+        const doorWidth = 0.6;
+        const doorHeight = 1.8;
+
+        const wallArea = 2 * (length * height + width * height) - (doorWidth * doorHeight);
+
+        let task = `
+            Найдите суммарную площадь стен парного отделения строящейся бани (без учёта двери). Размеры: длина ${length} м, ширина ${width} м, высота ${height} м.
+        `;
+        let answer = wallArea.toFixed(2) + ' кв. м';
+        let solution = `Площадь стен = 2 × (длина × высота + ширина × высота) - площадь двери = ${wallArea.toFixed(2)} кв. м`;
+
+        taskContainer.innerHTML += `
+            <div class="task">
+                <h3>Задание ${taskNumber}:</h3>
+                <p><strong>Условие:</strong> ${task}</p>
+                <input type="text" id="user-answer-${taskNumber}" placeholder="Введите ваш ответ">
+                <button onclick="showAnswer(${taskNumber}, '${answer}')">Показать ответ</button>
+                <p id="answer-${taskNumber}" class="hidden"><strong>Ответ:</strong> ${answer}</p>
+                <button onclick="showSolution(${taskNumber}, '${solution}')">Показать решение</button>
+                <p id="solution-${taskNumber}" class="hidden"><strong>Решение:</strong> ${solution}</p>
+            </div>
+        `;
+    }
+
+    function generateCase4(taskNumber) {
+        const taskContainer = document.getElementById('task-container');
+        const price = stoveData[0].cost;
+        const discount = getRandomInt(5, 35) / 100;
+
+        let task = `
+            В прошлом году печи стоили дороже. На них были сделаны скидки: на печь номер 1 скидка составила ${Math.round(discount * 100)}%. Найдите, сколько стоила печь номер 1 в прошлом году, если её нынешняя цена ${price} руб.
+        `;
+        let answer = (price / (1 - discount)).toFixed(2) + ' руб.';
+        let solution = `Цена до скидки = нынешняя цена / (1 - скидка) = ${answer}`;
+
+        taskContainer.innerHTML += `
+            <div class="task">
+                <h3>Задание ${taskNumber}:</h3>
+                <p><strong>Условие:</strong> ${task}</p>
+                <input type="text" id="user-answer-${taskNumber}" placeholder="Введите ваш ответ">
+                <button onclick="showAnswer(${taskNumber}, '${answer}')">Показать ответ</button>
+                <p id="answer-${taskNumber}" class="hidden"><strong>Ответ:</strong> ${answer}</p>
+                <button onclick="showSolution(${taskNumber}, '${solution}')">Показать решение</button>
+                <p id="solution-${taskNumber}" class="hidden"><strong>Решение:</strong> ${solution}</p>
+            </div>
+        `;
+    }
+
+    // Чертеж печи (Задание 5)
+    function generateCase5(taskNumber) {
+        const taskContainer = document.getElementById('task-container');
+        const radius = 75;  // Радиус фиксированный
+
+        let task = `
+            Хозяин выбрал дровяную печь (рис. 1). Чертеж передней панели печи показан на рисунке 2.<br><br>
+            Печь снабжена кожухом вокруг дверцы топки. Верхняя часть кожуха выполнена в виде арки, приваренной к передней стенке печки по дуге окружности с центром в середине нижней части кожуха (см. рис. 2). Для установки печки хозяину понадобилось узнать радиус закругления арки R. Размеры кожуха в сантиметрах показаны на рисунке. Найдите радиус закругления арки в сантиметрах.
+        `;
+
+        let solution = `
+            Проведем радиус как показано на рисунке. Тогда AC = 21, так как точка C — середина по условию. Тогда имеем треугольник ABC — прямоугольный. По теореме Пифагора найдем радиус.<br>
+            Ответ: 75 см.
+        `;
+
+        // SVG-изображение чертежа печи
+        let image = `
+            <svg width="400" height="300" viewBox="0 0 200 250">
+                <!-- Прямоугольник, представляющий дверцу -->
+                <rect x="79" y="150" width="42" height="72" fill="none" stroke="black" stroke-width="2"></rect>
+                <!-- Полукруг арки -->
+                <path d="M 79 150 A 75 75 0 0 1 121 150" fill="none" stroke="black" stroke-width="2"></path>
+                <!-- Обозначение радиуса -->
+                <line x1="100" y1="150" x2="100" y2="75" stroke="black" stroke-width="2"></line>
+                <text x="102" y="110" font-size="10" fill="black">R = 75 см</text>
+                <!-- Подписи -->
+                <text x="40" y="240" font-size="10" fill="black">Дверца</text>
+                <text x="30" y="50" font-size="10" fill="black">Арка кожуха</text>
+            </svg>
+        `;
+
+        taskContainer.innerHTML += `
+            <div class="task">
+                <h3>Задание ${taskNumber}:</h3>
+                <p><strong>Условие:</strong> ${task}</p>
+                ${image}
+                <input type="text" id="user-answer-${taskNumber}" placeholder="Введите ваш ответ">
+                <button onclick="showAnswer(${taskNumber}, '75')">Показать ответ</button>
+                <p id="answer-${taskNumber}" class="hidden"><strong>Ответ:</strong> 75 см</p>
+                <button onclick="showSolution(${taskNumber}, '${solution}')">Показать решение</button>
+                <p id="solution-${taskNumber}" class="hidden"><strong>Решение:</strong> ${solution}</p>
+            </div>
+        `;
+    }
+
+    function showAnswer(taskId, answer) {
+        document.getElementById(`answer-${taskId}`).classList.remove('hidden');
+    }
+
+    function showSolution(taskId, solution) {
+        document.getElementById(`solution-${taskId}`).classList.remove('hidden');
+    }
+
+</script>
+
+</body>
+</html>
+

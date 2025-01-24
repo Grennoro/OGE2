@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Генератор заданий</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        text-align: center;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background: linear-gradient(135deg, #4e54c8, #8f94fb, #ffc371, #ff5f6d);
+        color: black;
+    }
+    .hell{
+            background-color: black;
+            color: white;
+            border-radius: 30px;
+            box-shadow: 0 5px 10px gray;
+            padding: 20px;
+            position: fixed;
+            bottom: 50px;
+            left: 90%;
+            z-index: 100;
+            text-align: center;
+        }
+    .main {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        max-width: 700px;
+        width: 100%;
+        margin: 20px;
+    }
+
+    .question {
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+
+    input[type="number"] {
+        padding: 5px;
+        font-size: 16px;
+        border-radius: 5px;
+        border: 1px solid black;
+        margin-top: 10px;
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    button {
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: black;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: 0.3s;
+    }
+
+    button:hover {
+        background-color: whitesmoke;
+        color: black;
+        box-shadow: 0px 0px 10px black;
+    }
+
+    .ans {
+        font-size: 20px;
+        margin-top: 20px;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    #downloadLink {
+        display: block;
+        margin-top: 20px;
+        color: #ffffff;
+        background-color: #000080;
+        padding: 10px;
+        border-radius: 5px;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 15px;
+        transition: 0.3s;
+    }
+
+    #downloadLink:hover {
+        background-color: #4444aa;
+    }
+</style>
+</head>
+<body>
+<a href="main.html" class="hell">Вернуться<br>обратно</a>
+<div class="main">
+    <p class="question" id="task">Задание будет сгенерировано здесь</p>
+    <input type="number" id="userAnswer" placeholder="Ваш ответ">
+    <div class="buttons">
+        <button onclick="checkAnswer()">Проверить ответ</button>
+        <button onclick="showAnswer()">Показать ответ</button>
+        <button onclick="showSolution()">Показать решение</button>
+        <button onclick="generateTask()">Сгенерировать задание</button>
+    </div>
+    <p class="ans" id="result"></p>
+    <p class="ans hidden" id="correctAnswer">Правильный ответ: <span id="answer"></span></p>
+    <p class="ans hidden" id="solution">Решение: <span id="solutionText"></span></p>
+    <a id="downloadLink" href="#" download="file_catalog.zip">Скачать архив с файлами</a>
+</div>
+
+<!-- Подключаем JSZip библиотеку -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+
+<script>
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function generateRandomTask() {
+        const directories = ["Есенин", "Лермонтов", "Проза", "Поэзия", "DEMO-12", "Task12"];
+        const extensions = [".htm", ".rtf", ".pdf", ".docx", ".txt"];
+        const sizeConditions = ["более", "не более"];
+        const randomDirectory = directories[getRandomInt(0, directories.length - 1)];
+        const randomExtension = extensions[getRandomInt(0, extensions.length - 1)];
+        const randomSizeCondition = sizeConditions[getRandomInt(0, sizeConditions.length - 1)];
+        const randomSize = getRandomInt(1, 10); // Максимум 10 Кб
+        
+        const taskVariants = [
+            `Сколько файлов с расширением ${randomExtension} ${randomSizeCondition} ${randomSize} Кб содержится в подкаталогах каталога ${randomDirectory}? В ответе укажите только число.`,
+            `Укажите количество файлов с расширением ${randomExtension} размером ${randomSizeCondition} ${randomSize} Кб в каталоге ${randomDirectory}.`,
+            `Определите, сколько файлов с расширением ${randomExtension} и размером ${randomSizeCondition} ${randomSize} Кб находится в папке ${randomDirectory}.`
+        ];
+        
+        const question = taskVariants[getRandomInt(0, taskVariants.length - 1)];
+        
+        return { question, randomDirectory, randomExtension, randomSizeCondition, randomSize };
+    }
+
+    let currentTask;
+
+    function generateTask() {
+        currentTask = generateRandomTask();
+        document.getElementById("task").innerText = currentTask.question;
+        document.getElementById("userAnswer").value = '';
+        document.getElementById("result").innerText = '';
+        document.getElementById("correctAnswer").classList.add("hidden");
+        document.getElementById("solution").classList.add("hidden");
+
+        const zip = new JSZip();
+        const mainFolder = zip.folder("file_catalog");
+
+        const subfolders = ["Есенин", "Лермонтов", "Проза", "Поэзия", "Task12"];
+        const extensions = [".htm", ".rtf", ".pdf", ".docx", ".txt", ".html", ".js", ".py", ".odt"];
+        let answerCount = 0;
+        let solutionDetails = [];
+
+        function createFileWithExactSize(sizeKb) {
+            const content = new Array(sizeKb * 1024).fill(' ').join(''); // Контент с точным размером
+            return content;
+        }
+
+        subfolders.forEach(folderName => {
+            const folder = mainFolder.folder(folderName);
+            for (let i = 1; i <= getRandomInt(20, 30); i++) {
+                const randomExtension = extensions[getRandomInt(0, extensions.length - 1)];
+                const fileSizeKb = getRandomInt(1, 10); 
+                const fileName = `file${i}${randomExtension}`;
+                const content = createFileWithExactSize(fileSizeKb);
+
+                folder.file(fileName, content);
+
+                // Проверка соответствия размера и условий задания
+                if (folderName === currentTask.randomDirectory && randomExtension === currentTask.randomExtension) {
+                    if ((currentTask.randomSizeCondition === "более" && fileSizeKb > currentTask.randomSize) ||
+                        (currentTask.randomSizeCondition === "не более" && fileSizeKb <= currentTask.randomSize)) {
+                        answerCount++;
+                        solutionDetails.push(`Файл "${fileName}" размером ${fileSizeKb} Кб.`);
+                    }
+                }
+            }
+        });
+
+        // Если файлов, соответствующих условиям, недостаточно, добавляем их вручную
+        while (answerCount < 1) {
+            const matchingFileSizeKb = currentTask.randomSizeCondition === "более" ? currentTask.randomSize + 1 : currentTask.randomSize - 1;
+            const extraFileName = `extraFileMatch${currentTask.randomExtension}`;
+            const extraContent = createFileWithExactSize(matchingFileSizeKb);
+            mainFolder.folder(currentTask.randomDirectory).file(extraFileName, extraContent);
+            answerCount++;
+            solutionDetails.push(`Файл "${extraFileName}" размером ${matchingFileSizeKb} Кб`);
+        }
+
+        currentTask.answer = answerCount;
+        currentTask.solution = `В каталоге "${currentTask.randomDirectory}" найдены файлы, соответствующие условиям:\n` + solutionDetails.join("\n");
+
+        zip.generateAsync({ type: "blob" })
+            .then(function(content) {
+                const downloadLink = document.getElementById("downloadLink");
+                downloadLink.href = URL.createObjectURL(content);
+            });
+    }
+
+    function checkAnswer() {
+        const userAnswer = parseInt(document.getElementById("userAnswer").value, 10);
+        if (userAnswer === currentTask.answer) {
+            document.getElementById("result").innerText = "Ответ верный!";
+
+            // Обновление прогресса для задания 12
+            fetch('/user/progress/informatics/12', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ taskId: '12', increment: 1 })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log("Прогресс для задания 12 обновлен.");
+                } else {
+                    console.error("Ошибка при обновлении прогресса для задания 12.");
+                }
+            })
+            .catch(error => console.error("Ошибка при обновлении прогресса задания 12:", error));
+        } else {
+            document.getElementById("result").innerText = "Ответ неверный. Попробуйте ещё раз.";
+        }
+    }
+
+    function showAnswer() {
+        document.getElementById("correctAnswer").classList.remove("hidden");
+        document.getElementById("answer").innerText = currentTask.answer;
+    }
+
+    function showSolution() {
+        document.getElementById("solution").classList.remove("hidden");
+        document.getElementById("solutionText").innerText = currentTask.solution;
+    }
+
+    generateTask(); 
+</script>
+
+</body>
+</html>

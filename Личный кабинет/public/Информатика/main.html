@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ОГЭ Информатика</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Baskervville+SC&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=New+Amsterdam&display=swap');
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0f0f0f;
+            color: #e0e0e0;
+            font-family: "New Amsterdam", serif;
+            overflow-x: hidden;
+        }
+        .middle-words {
+            font-family: "Baskervville SC", serif;
+            font-size: 40px;
+            color: #ffcc66;
+            text-align: center;
+            padding: 10px 0;
+            background-color: #333333;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+        }
+        .top {
+            background-color: #1b1b1b;
+            width: 100%;
+            height: 90px;
+            position: fixed;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+        .silk {
+            color: #d1d1d1;
+            font-size: 20px;
+            text-decoration: none;
+            margin: 0 15px;
+            position: relative;
+            transition: color 0.3s;
+        }
+        .silk:hover {
+            color: #ffcc66;
+        }
+        .name {
+            font-family: "New Amsterdam", serif;
+            font-size: 45px;
+            color: #ffcc66;
+            text-shadow: 2px 2px 5px rgba(255, 255, 255, 0.1);
+        }
+        .header {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100%;
+            background: radial-gradient(circle, rgba(45, 45, 45, 1) 0%, rgba(18, 18, 18, 1) 100%);
+            color: white;
+        }
+        h1 {
+            color: #ffcc66;
+            font-size: 55px;
+            text-align: center;
+            font-family: "Baskervville SC", serif;
+            text-shadow: 0px 0px 20px rgba(255, 204, 102, 0.8);
+            margin-bottom: 20px;
+        }
+        .choose {
+            font-family: "Baskervville SC", serif;
+            text-decoration: none;
+            font-size: 25px;
+            border: 2px solid #ffcc66;
+            border-radius: 10px;
+            padding: 15px 30px;
+            color: #ffcc66;
+            background-color: transparent;
+            transition: all 0.3s;
+            box-shadow: 0 0 20px rgba(255, 204, 102, 0.2);
+        }
+        .choose:hover {
+            background-color: #ffcc66;
+            color: black;
+            transform: scale(1.1);
+            box-shadow: 0 0 40px rgba(255, 204, 102, 0.6);
+        }
+        .choose-2 {
+            font-family: "Baskervville SC", serif;
+            text-decoration: none;
+            font-size: 25px;
+            border: 2px solid #ffcc66;
+            border-radius: 10px;
+            padding: 15px 30px;
+            color: #ffcc66;
+            background-color: transparent;
+            transition: all 0.3s;
+            box-shadow: 0 0 20px rgba(255, 204, 102, 0.2);
+        }
+        .choose-2:hover {
+            background-color: #ffcc66;
+            color: black;
+            transform: scale(1.1);
+            box-shadow: 0 0 40px rgba(255, 204, 102, 0.6);
+        }
+        img {
+            margin: 50px 0;
+            rotate: -5deg;
+            width: 250px;
+            transition: transform 0.5s ease;
+        }
+        img:hover {
+            transform: rotate(0) scale(1.1);
+        }
+        .middle {
+            padding: 50px 20px;
+            background-color: #1b1b1b;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+        }
+        table {
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+            text-align: center;
+        }
+        .ex {
+            display: inline-block;
+            text-decoration: none;
+            width: 140px;
+            background-color: #333333;
+            color: #ffcc66;
+            border: 2px solid #ffcc66;
+            border-radius: 10px;
+            font-size: 20px;
+            padding: 15px;
+            font-family: "Baskervville SC", serif;
+            margin: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(255, 204, 102, 0.5);
+        }
+        .ex:hover {
+            background-color: #ffcc66;
+            color: black;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255, 204, 102, 0.8);
+        }
+        .end {
+            background-color: #0f0f0f;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.5);
+        }
+        .end-words {
+            font-family: "Baskervville SC", serif;
+            font-size: 18px;
+            color: #ffcc66;
+        }
+        .hell {
+            background-color: #ffcc66;
+            color: black;
+            border-radius: 30px;
+            box-shadow: 0 5px 20px rgba(255, 204, 102, 0.8);
+            padding: 15px;
+            position: fixed;
+            bottom: 50px;
+            right: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .hell:hover {
+            box-shadow: 0 5px 30px rgba(255, 204, 102, 1);
+        }
+
+        /* Кнопка переключения темы */
+        .theme-toggle-btn {
+            position: fixed;
+            bottom: 50px;
+            left: 20px;
+            background-color: #ffcc66;
+            color: black;
+            border: none;
+            border-radius: 30px; /* Теперь радиус совпадает с кнопкой наверх */
+            padding: 15px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        .theme-toggle-btn:hover {
+            box-shadow: 0 5px 30px rgba(255, 204, 102, 0.8);
+        }
+
+        /* Светлая тема */
+        .light-mode {
+            background-color: #f0f0f0;
+            color: #333333;
+        }
+        .light-mode .middle-words{
+            background-color: whitesmoke;
+            
+        }
+        .light-mode .top {
+            background-color: #ffffff;
+        }
+        .light-mode .silk {
+            color: #333333;
+        }
+        .light-mode .name {
+            color: #333333;
+        }
+        .light-mode .header {
+            background: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgba(240, 240, 240, 1) 100%);
+            color: #333333;
+        }
+        .light-mode h1 {
+            color: #333333;
+            text-shadow: none;
+        }
+        .light-mode .choose {
+            color: #333333;
+            border-color: #333333;
+        }
+        .light-mode .choose:hover {
+            background-color: #333333;
+            color: #f0f0f0;
+        }
+        .light-mode .choose-2 {
+            color: #333333;
+            border-color: #333333;
+        }
+        .light-mode .choose-2:hover {
+            background-color: #333333;
+            color: #f0f0f0;
+        }
+        .light-mode .middle {
+            background-color: #ffffff;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        .light-mode .middle-words {
+            color: #333333;
+        }
+        .light-mode .ex {
+            background-color: #ffffff;
+            color: #333333;
+            border-color: #333333;
+        }
+        .light-mode .ex:hover {
+            background-color: #333333;
+            color: #f0f0f0;
+        }
+        .light-mode .end {
+            background-color: #ffffff;
+            color: #333333;
+        }
+        .light-mode .end-words {
+            color: #333333;
+        }
+        .light-mode .hell {
+            background-color: #333333;
+            color: #f0f0f0;
+        }
+        .light-mode .hell:hover {
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
+        }
+        @media (max-width: 768px) {
+            .header {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 35px;
+            }
+            .choose {
+                font-size: 20px;
+                padding: 10px 20px;
+            }
+            table {
+                width: 100%;
+            }
+            .ex {
+                width: 100%;
+                margin: 10px 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .top {
+                flex-direction: column;
+                height: auto;
+            }
+            .silk {
+                font-size: 16px;
+            }
+            .name {
+                font-size: 35px;
+            }
+            h1 {
+                font-size: 30px;
+            }
+            .choose {
+                font-size: 18px;
+            }
+            .hell {
+                font-size: 14px;
+            }
+        }
+        .gener{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+
+
+
+
+<body class="dark-mode">
+    <div class="top">
+        <p class="name">Grennoro</p>
+        <a href="../index.html" class="silk back">вернуться в главное меню</a>
+        <a href="conspect.html" class="silk matem">Конспекты</a>
+        <a href="Game.html" class="silk game">Скоротать время</a>
+    </div>
+    <button class="theme-toggle-btn" id="theme-toggle">Сменить тему</button>
+    <div class="header">
+        <h1 id="OGE">ОГЭ Информатика<br>Типовые задания</h1>
+        <a href="#mid" class="choose">Выбрать задания</a>
+        <img src="mem.jpeg" alt="Мем">
+    </div>
+
+    <a href="#OGE" class="hell">Наверх</a>
+
+    <div class="middle">
+        <div class="middle-words">Задания</div>
+        <table>
+            <tbody>
+                <tr>
+                    <th><a href="1-ex.html" class="ex">1 задание</a></th>
+                    <th><a href="2-ex.html" class="ex">2 задание</a></th>
+                    <th><a href="3-ex.html" class="ex">3 задание</a></th>
+                </tr>
+                <tr>
+                    <th><a href="4-ex.html" class="ex">4 задание</a></th>
+                    <th><a href="5-ex.html" class="ex">5 задание</a></th>
+                    <th><a href="6-ex.html" class="ex">6 задание</a></th>
+                </tr>
+                <tr>
+                    <th><a href="7-ex.html" class="ex">7 задание</a></th>
+                    <th><a href="8-ex.html" class="ex">8 задание</a></th>
+                    <th><a href="9-ex.html" class="ex">9 задание</a></th>
+                </tr>
+                <tr>
+                    <th><a href="10-ex.html" class="ex">10 задание</a></th>
+                    <th><a href="11-ex.html" class="ex" id="mid">11 задание</a></th>
+                    <th><a href="12-ex.html" class="ex">12 задание</a></th>
+                </tr>
+                <tr>
+                    <th><a href="13-ex.html" class="ex">13 задание</a></th>
+                    <th><a href="14-ex.html" class="ex">14 задание</a></th>
+                    <th><a href="15_1-ex.html" class="ex">15.1 задание</a></th>
+                </tr>   
+                <tr class="spec">
+                    <th></th>
+                    <th><a href="https://grennoro.pythonanywhere.com" class="ex">15.2 задание</a></th>
+                    <th></th>
+                </tr>
+            </tbody>
+        </table>
+            <div class="middle-words">Сгенерировать весь вариант для Информатики</div>
+        <div class="gener">
+            <a href="generated.html" class="choose-2">Генерация варианта</a>
+        </div>
+    </div>
+
+    <div class="end">
+        <h2 class="end-words">Все права защищены.<br>Появились вопросы или нашли ошибку? Пиши на почту - infatop2917@mail.ru</h2>
+    </div>
+    <script>
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const currentTheme = localStorage.getItem('theme') || 'dark';
+
+        document.body.classList.add(currentTheme + '-mode');
+        themeToggleBtn.textContent = 'Сменить тему';
+
+        themeToggleBtn.addEventListener('click', () => {
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            document.body.classList.toggle('dark-mode', !isDarkMode);
+            document.body.classList.toggle('light-mode', isDarkMode);
+
+            const newTheme = isDarkMode ? 'light' : 'dark';
+            themeToggleBtn.textContent = 'Сменить тему';
+
+            localStorage.setItem('theme', newTheme);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор заданий</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Wittgenstein:wght@400&display=swap');
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(120deg, #3A6073 0%, #16222A 100%);
+            font-family: 'Wittgenstein', sans-serif;
+            color: white;
+            text-align: center;
+        }
+        .task-container {
+            max-width: 700px;
+            background-color: white;
+            color: black;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+            margin: 20px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        .task {
+            font-size: 18px;
+            margin: 15px 0;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: black;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+            margin: 5px;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: whitesmoke;
+            color: black;
+            box-shadow: 0px 0px 10px black;
+        }
+        input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid black;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        #answer, #solution, #check-result {
+            display: none;
+            padding: 15px;
+            background-color: #f1f1f1;
+            color: black;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        #task {
+            color: black;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="task-container">
+        <h1>Генератор заданий ОГЭ</h1>
+        <p id="task" class="task">Задание будет здесь...</p>
+
+        <input type="text" id="userAnswer" placeholder="Введите ваш ответ"/>
+        <button onclick="checkAnswer()">Проверить ответ</button>
+        <button onclick="showAnswer()">Показать ответ</button>
+        <button onclick="showSolution()">Показать решение</button>
+        <button onclick="generateTask()">Сгенерировать задание</button>
+        
+        <div id="answer">Ответ: <span id="correctAnswer"></span></div>
+        <div id="solution">Решение: <span id="correctSolution"></span></div>
+        <div id="check-result"></div>
+    </div>
+
+    <script>
+        let correctAnswerGlobal;
+
+        function generateTask() {
+            const taskType = getRandomInt(1, 15); // 15 типов задач для большего разнообразия
+            let task = '';
+            let correctAnswer;
+            let solution;
+
+            const a = getRandomInt(2, 10); // Избегаем коэффициента 1
+            const b = getRandomInt(2, 10); // Избегаем коэффициента 1
+            const c = getRandomInt(-10, 10);
+
+            switch (taskType) {
+                case 1: // Простое линейное уравнение с целым решением
+                    task = `Решите уравнение: ${a}x + ${b} = 0. Если корней несколько, запишите их в ответ без пробелов и тире в порядке возрастания.`;
+                    correctAnswer = (-b / a);
+                    solution = `Решение: x = -(${b}) / ${a} = ${correctAnswer}`;
+                    break;
+
+                case 2: // Система уравнений с целыми решениями
+                    const a1 = getRandomInt(2, 5);
+                    const b1 = getRandomInt(2, 5);
+                    const c1 = getRandomInt(1, 10);
+                    const a2 = getRandomInt(2, 5);
+                    const b2 = getRandomInt(2, 5);
+                    const c2 = getRandomInt(1, 10);
+
+                    task = `Решите систему уравнений: \n${a1}x + ${b1}y = ${c1} \n${a2}x + ${b2}y = ${c2}. Если корней несколько, запишите их в ответ без пробелов и тире в порядке возрастания.`;
+
+                    const denominator = a1 * b2 - a2 * b1;
+                    if (denominator !== 0) {
+                        const x = Math.floor((c1 * b2 - c2 * b1) / denominator);
+                        const y = Math.floor((a1 * c2 - a2 * c1) / denominator);
+                        correctAnswer = `${x}${y}`;
+                        solution = `Решение: x = ${x}, y = ${y}, запишите их без пробелов: ${x}${y}`;
+                    } else {
+                        generateTask();
+                        return;
+                    }
+                    break;
+
+                case 3: // Квадратное уравнение с целыми корнями
+                    const discriminant = b * b - 4 * a * c;
+                    if (discriminant >= 0) {
+                        const x1 = (-b + Math.sqrt(discriminant)) / (2 * a);
+                        const x2 = (-b - Math.sqrt(discriminant)) / (2 * a);
+
+                        if (Number.isInteger(x1) && Number.isInteger(x2) && x1 !== x2) {
+                            task = `Решите уравнение. Если корней несколько, запишите их в ответ без пробелов и тире в порядке возрастания.`;
+                            correctAnswer = `${Math.min(x1, x2)}${Math.max(x1, x2)}`;
+                            solution = `Корни уравнения: x₁ = ${x1}, x₂ = ${x2}, запишите их в порядке возрастания: ${correctAnswer}`;
+                        } else {
+                            generateTask();
+                            return;
+                        }
+                    } else {
+                        generateTask();
+                        return;
+                    }
+                    break;
+
+                case 4: // Уравнение с одним целым корнем
+                    const a3 = getRandomInt(2, 5);
+                    const b3 = getRandomInt(2, 5);
+                    const root = getRandomInt(-10, 10);
+
+                    task = `Решите уравнение: ${a3}(x - ${root}) = ${b3}(x - ${root}). Если корней несколько, запишите их в ответ без пробелов и тире в порядке возрастания.`;
+                    correctAnswer = root;
+                    solution = `Решение: раскрываем скобки и получаем, что x = ${root}`;
+                    break;
+
+                case 5: // Найти корень системы уравнений
+                    const m = getRandomInt(2, 10);
+                    const n = getRandomInt(2, 10);
+                    task = `Решите систему уравнений и найдите x + y:\nmx + ny = ${m + n}\nmx - ny = ${m - n}. Если корней несколько, запишите их в ответ без пробелов и тире в порядке возрастания.`;
+                    correctAnswer = `${m}${n}`;
+                    solution = `Решение: складываем уравнения, получаем x + y = ${m + n}`;
+                    break;
+
+                case 6: // Уравнение с параметром
+                    const p = getRandomInt(2, 5);
+                    const q = getRandomInt(2, 5);
+                    const r = getRandomInt(-5, 5);
+                    task = `Решите уравнение: ${p}x² + ${q}x + ${r} = 0. Если корней несколько, запишите их в ответ без пробелов и тире в порядке возрастания.`;
+                    const discriminantParam = q * q - 4 * p * r;
+                    if (discriminantParam >= 0) {
+                        const x_param1 = (-q + Math.sqrt(discriminantParam)) / (2 * p);
+                        const x_param2 = (-q - Math.sqrt(discriminantParam)) / (2 * p);
+                        if (Number.isInteger(x_param1) && Number.isInteger(x_param2) && x_param1 !== x_param2) {
+                            correctAnswer = `${Math.min(x_param1, x_param2)}${Math.max(x_param1, x_param2)}`;
+                            solution = `Корни уравнения: x₁ = ${x_param1}, x₂ = ${x_param2}. Ответ: ${correctAnswer}`;
+                        } else {
+                            generateTask();
+                            return;
+                        }
+                    } else {
+                        generateTask();
+                        return;
+                    }
+                    break;
+
+                case 7: // Уравнение с двумя целыми корнями
+                    const k = getRandomInt(2, 5);
+                    const root1 = getRandomInt(1, 10);
+                    const root2 = getRandomInt(1, 10);
+
+                    task = `Решите уравнение: ${k}(x - ${root1})(x - ${root2}) = 0. Если корней несколько, запишите их в ответ без пробелов и тире в порядке возрастания.`;
+                    if (root1 !== root2) {
+                        correctAnswer = `${Math.min(root1, root2)}${Math.max(root1, root2)}`;
+                        solution = `Корни уравнения: x₁ = ${root1}, x₂ = ${root2}. Запишите их в порядке возрастания: ${correctAnswer}`;
+                    } else {
+                        generateTask();
+                        return;
+                    }
+                    break;
+
+                case 8: // Сумма корней квадратного уравнения
+                    const coeffA1 = getRandomInt(2, 10);
+                    const coeffB1 = getRandomInt(2, 10);
+                    task = `Найдите сумму корней уравнения: ${coeffA1}x² + ${coeffB1}x = 0. Если корней несколько, запишите их в ответ без пробелов и тире в порядке возрастания.`;
+                    correctAnswer = coeffB1 === 0 ? 0 : -coeffB1 / coeffA1;
+                    solution = `Сумма корней равна: ${correctAnswer}`;
+                    break;
+
+                case 9: // Произведение корней уравнения
+                    const coeffA2 = getRandomInt(2, 10);
+                    const coeffC1 = getRandomInt(1, 10);
+                    task = `Найдите произведение корней уравнения: ${coeffA2}x² - ${coeffC1} = 0. Если корней несколько, запишите их в ответ без пробелов и тире в порядке возрастания.`;
+                    correctAnswer = coeffC1 / coeffA2;
+                    solution = `Произведение корней равно: ${correctAnswer}`;
+                    break;
+
+                case 10: // Уравнение с неизвестной переменной
+                    const coeffP = getRandomInt(2, 5);
+                    const coeffQ = getRandomInt(-5, 5);
+                    task = `Решите уравнение: ${coeffP}x + ${coeffQ} = 0. Если корней несколько, запишите их в ответ без пробелов и тире в порядке возрастания.`;
+                    correctAnswer = -coeffQ / coeffP;
+                    solution = `Корень уравнения: ${correctAnswer}`;
+                    break;
+
+                case 11: // Система уравнений с параметрами
+                    const paramA = getRandomInt(2, 5);
+                    const paramB = getRandomInt(2, 5);
+                    const paramSum = getRandomInt(1, 10);
+                    task = `Решите систему уравнений и найдите x:\n${paramA}x + ${paramB} = ${paramSum}\n${paramA}x - ${paramB} = ${paramSum - paramB}. Если корней несколько, запишите их в ответ без пробелов и тире в порядке возрастания.`;
+                    correctAnswer = paramSum / paramA;
+                    solution = `Решение: x = ${correctAnswer}`;
+                    break;
+
+                case 12: // Линейное уравнение с двумя неизвестными
+                    const coeffA3 = getRandomInt(2, 5);
+                    const coeffB3 = getRandomInt(2, 5);
+                    const coeffC3 = getRandomInt(-10, 10);
+                    task = `Решите уравнение: ${coeffA3}x + ${coeffB3}y = ${coeffC3}. Если корней несколько, запишите их в ответ без пробелов и тире в порядке возрастания.`;
+                    correctAnswer = coeffC3 / coeffA3;
+                    solution = `Решение: x = ${correctAnswer}`;
+                    break;
+
+                case 13: // Нахождение суммы корней
+                    const coeffA4 = getRandomInt(2, 10);
+                    const coeffB4 = getRandomInt(2, 10);
+                    task = `Найдите сумму корней уравнения: ${coeffA4}x² + ${coeffB4}x = 0. Если корней несколько, запишите их в ответ без пробелов и тире в порядке возрастания.`;
+                    correctAnswer = coeffB4 === 0 ? 0 : -coeffB4 / coeffA4;
+                    solution = `Сумма корней равна: ${correctAnswer}`;
+                    break;
+
+                case 14: // Нахождение произведения корней
+                    const coeffA5 = getRandomInt(2, 10);
+                    const coeffC5 = getRandomInt(1, 10);
+                    task = `Найдите произведение корней уравнения: ${coeffA5}x² - ${coeffC5} = 0. Если корней несколько, запишите их в ответ без пробелов и тире в порядке возрастания.`;
+                    correctAnswer = coeffC5 / coeffA5;
+                    solution = `Произведение корней равно: ${correctAnswer}`;
+                    break;
+
+                case 15: // Линейное уравнение с параметром
+                    const paramCoeffA = getRandomInt(2, 5);
+                    const paramCoeffB = getRandomInt(-5, 5);
+                    task = `Решите уравнение: ${paramCoeffA}x + ${paramCoeffB} = 0. Если корней несколько, запишите их в ответ без пробелов и тире в порядке возрастания.`;
+                    correctAnswer = -paramCoeffB / paramCoeffA;
+                    solution = `Корень уравнения: ${correctAnswer}`;
+                    break;
+
+                default:
+                    generateTask(); // Перезапускаем, если что-то пошло не так
+            }
+
+            correctAnswerGlobal = correctAnswer;
+            document.getElementById("task").innerText = task;
+            document.getElementById("correctAnswer").innerText = correctAnswer;
+            document.getElementById("correctSolution").innerText = solution;
+            document.getElementById("answer").style.display = "none";
+            document.getElementById("solution").style.display = "none";
+            document.getElementById("check-result").style.display = "none";
+            document.getElementById("userAnswer").value = '';
+        }
+
+        function checkAnswer() {
+            const userAnswer = document.getElementById("userAnswer").value.trim();
+            const resultDiv = document.getElementById("check-result");
+
+            if (userAnswer === correctAnswerGlobal.toString()) {
+                resultDiv.style.display = "block";
+                resultDiv.style.color = "green";
+                resultDiv.innerText = "Правильно!";
+            } else {
+                resultDiv.style.display = "block";
+                resultDiv.style.color = "red";
+                resultDiv.innerText = `Неправильно. Правильный ответ: ${correctAnswerGlobal}`;
+            }
+        }
+
+        function showAnswer() {
+            document.getElementById("answer").style.display = "block";
+        }
+
+        function showSolution() {
+            document.getElementById("solution").style.display = "block";
+        }
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        generateTask(); // Генерация первого задания при загрузке страницы
+    </script>
+</body>
+</html>
